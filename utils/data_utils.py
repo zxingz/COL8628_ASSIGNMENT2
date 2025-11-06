@@ -6,51 +6,28 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
+from glob import glob
 
-def load_dataset(data_path: str) -> Dict[str, Any]:
-    """
-    Load dataset from JSON file.
+import pandas as pd
+
+from PIL import Image
+
+def load_rgb_image(path: Path) -> Image.Image:
+    """Load Image"""
+    return Image.open(path).convert("RGB")
+
+class DataSet:
+    """Dataset class to handle data loading and preprocessing."""
     
-    Args:
-        data_path: Path to the JSON dataset file
+    def __init__(self, data_path: str = 'data', name: str = 'A', label: str = 'train'):
+        self.data_path = Path(data_path) 
+        self.name = 'A'
+        self.label = label
+        self.df = pd.read_csv(os.path.join(self.data_path, f'dataset_{self.name}', f'{self.label}', f'{self.label}.csv'))
         
-    Returns:
-        Dictionary containing dataset information
-    """
-    with open(data_path, 'r') as f:
-        dataset = json.load(f)
-    return dataset
-
-def save_results(results: Dict[str, Any], output_path: str) -> None:
-    """
-    Save results to JSON file.
-    
-    Args:
-        results: Dictionary containing results to save
-        output_path: Path to save the results
-    """
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w') as f:
-        json.dump(results, f, indent=2)
-
-def validate_dataset_format(dataset: Dict[str, Any]) -> bool:
-    """
-    Validate that the dataset follows the expected format.
-    
-    Args:
-        dataset: Dataset dictionary to validate
         
-    Returns:
-        True if valid, False otherwise
-    """
-    required_keys = ['images', 'classes']
-    
-    if not all(key in dataset for key in required_keys):
-        return False
-    
-    # Validate image entries
-    for image in dataset['images']:
-        if not all(key in image for key in ['id', 'path', 'label']):
-            return False
-    
-    return True
+if __name__ == "__main__":
+    # Example usage
+    dataset = DataSet(data_path='data', name='A', label='train')
+    print(dataset.df.head())
+
