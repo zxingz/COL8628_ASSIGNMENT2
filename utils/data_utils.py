@@ -25,6 +25,10 @@ class DataSet:
         self.label = label
         self.df = pd.read_csv(os.path.join(self.data_path, f'dataset_{self.name}', f'{self.label}', f'{self.label}.csv'))
         
+    def load_image(self, image_name: str) -> Image.Image:
+        """Load an image given its name."""
+        image_path = self.data_path / f'dataset_{self.name}' / self.label / image_name
+        return load_rgb_image(image_path)
         
 if __name__ == "__main__":
     # Example usage

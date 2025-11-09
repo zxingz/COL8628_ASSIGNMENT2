@@ -1,0 +1,828 @@
+{
+  "dataset": "A",
+  "ground_truth": {
+    "Calc-Training_P_00243_LEFT_CC.jpg": [
+      [
+        1254.0,
+        2059.0,
+        2100.0,
+        3045.0
+      ]
+    ],
+    "Calc-Training_P_00270_LEFT_CC.jpg": [],
+    "Calc-Training_P_00270_LEFT_MLO.jpg": [],
+    "Calc-Training_P_00288_RIGHT_MLO.jpg": [
+      [
+        567.0,
+        4117.0,
+        798.0,
+        4338.0
+      ]
+    ],
+    "Calc-Training_P_00373_LEFT_CC.jpg": [],
+    "Calc-Training_P_00378_LEFT_MLO.jpg": [],
+    "Calc-Training_P_00469_LEFT_CC.jpg": [],
+    "Calc-Training_P_00523_RIGHT_MLO.jpg": [
+      [
+        1656.0,
+        1600.0,
+        2137.0,
+        2121.0
+      ]
+    ],
+    "Calc-Training_P_00621_LEFT_CC.jpg": [],
+    "Calc-Training_P_00639_RIGHT_MLO.jpg": [
+      [
+        1984.0,
+        1384.0,
+        2193.0,
+        1673.0
+      ]
+    ],
+    "Calc-Training_P_00666_RIGHT_CC.jpg": [],
+    "Calc-Training_P_00684_RIGHT_CC.jpg": [
+      [
+        2384.0,
+        1136.0,
+        2625.0,
+        1505.0
+      ]
+    ],
+    "Calc-Training_P_00701_LEFT_CC.jpg": [],
+    "Calc-Training_P_00832_RIGHT_MLO.jpg": [
+      [
+        420.0,
+        3481.0,
+        1401.0,
+        3969.0
+      ]
+    ],
+    "Calc-Training_P_00923_RIGHT_MLO.jpg": [],
+    "Calc-Training_P_00973_RIGHT_MLO.jpg": [],
+    "Calc-Training_P_01084_LEFT_MLO.jpg": [
+      [
+        160.0,
+        2032.0,
+        201.0,
+        2089.0
+      ]
+    ],
+    "Calc-Training_P_01102_LEFT_MLO.jpg": [],
+    "Calc-Training_P_01107_LEFT_CC.jpg": [],
+    "Calc-Training_P_01246_RIGHT_MLO.jpg": [],
+    "Calc-Training_P_01276_RIGHT_CC.jpg": [],
+    "Calc-Training_P_01292_RIGHT_MLO.jpg": [],
+    "Calc-Training_P_01334_RIGHT_CC.jpg": [],
+    "Calc-Training_P_01342_LEFT_MLO.jpg": [
+      [
+        1284.0,
+        2628.0,
+        1685.0,
+        2981.0
+      ]
+    ],
+    "Calc-Training_P_01387_LEFT_MLO.jpg": [],
+    "Calc-Training_P_01420_RIGHT_MLO.jpg": [
+      [
+        332.0,
+        4177.0,
+        998.0,
+        4543.0
+      ]
+    ],
+    "Calc-Training_P_01513_LEFT_CC.jpg": [],
+    "Calc-Training_P_01574_RIGHT_MLO.jpg": [],
+    "Calc-Training_P_01777_LEFT_CC.jpg": [],
+    "Calc-Training_P_02154_LEFT_CC.jpg": [
+      [
+        26.0,
+        2161.0,
+        295.0,
+        2466.0
+      ]
+    ],
+    "Calc-Training_P_02259_LEFT_CC.jpg": [
+      [
+        1518.0,
+        2606.0,
+        1963.0,
+        3023.0
+      ]
+    ],
+    "Calc-Training_P_02437_LEFT_CC.jpg": [
+      [
+        618.0,
+        1047.0,
+        2887.0,
+        2504.0
+      ]
+    ],
+    "Mass-Training_P_00004_RIGHT_MLO.jpg": [],
+    "Mass-Training_P_00051_LEFT_CC.jpg": [
+      [
+        978.0,
+        1971.0,
+        1532.0,
+        2694.0
+      ]
+    ],
+    "Mass-Training_P_00224_LEFT_CC.jpg": [],
+    "Mass-Training_P_00226_LEFT_CC.jpg": [
+      [
+        858.0,
+        2617.0,
+        1374.0,
+        3131.0
+      ]
+    ],
+    "Mass-Training_P_00351_LEFT_CC.jpg": [],
+    "Mass-Training_P_00572_RIGHT_CC.jpg": [],
+    "Mass-Training_P_00596_LEFT_MLO.jpg": [],
+    "Mass-Training_P_00634_LEFT_MLO.jpg": [],
+    "Mass-Training_P_00640_RIGHT_MLO.jpg": [],
+    "Mass-Training_P_00851_LEFT_MLO.jpg": [
+      [
+        3528.0,
+        2904.0,
+        3796.0,
+        3131.0
+      ]
+    ],
+    "Mass-Training_P_00894_RIGHT_MLO.jpg": [],
+    "Mass-Training_P_00911_LEFT_CC.jpg": [],
+    "Mass-Training_P_00988_LEFT_CC.jpg": [],
+    "Mass-Training_P_01039_RIGHT_MLO.jpg": [],
+    "Mass-Training_P_01062_RIGHT_CC.jpg": [],
+    "Mass-Training_P_01112_LEFT_CC.jpg": [],
+    "Mass-Training_P_01115_RIGHT_MLO.jpg": [],
+    "Mass-Training_P_01155_RIGHT_MLO.jpg": [
+      [
+        701.0,
+        2154.0,
+        960.0,
+        2459.0
+      ]
+    ],
+    "Mass-Training_P_01243_LEFT_MLO.jpg": [],
+    "Mass-Training_P_01328_LEFT_CC.jpg": [
+      [
+        190.0,
+        2424.0,
+        525.0,
+        2692.0
+      ]
+    ],
+    "Mass-Training_P_01343_LEFT_CC.jpg": [
+      [
+        1331.0,
+        1961.0,
+        1744.0,
+        2350.0
+      ]
+    ],
+    "Mass-Training_P_01356_LEFT_CC.jpg": [
+      [
+        1300.0,
+        2171.0,
+        1935.0,
+        2806.0
+      ]
+    ],
+    "Mass-Training_P_01357_LEFT_MLO.jpg": [
+      [
+        317.0,
+        656.0,
+        574.0,
+        973.0
+      ]
+    ],
+    "Mass-Training_P_01638_RIGHT_CC.jpg": [],
+    "Mass-Training_P_01650_LEFT_CC.jpg": [],
+    "Mass-Training_P_01785_RIGHT_CC.jpg": [],
+    "Mass-Training_P_01876_LEFT_MLO.jpg": [],
+    "Mass-Training_P_01878_RIGHT_MLO.jpg": []
+  },
+  "prediction_A": {
+    "Calc-Training_P_01334_RIGHT_CC.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_00894_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_01387_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          857.5740966796875,
+          1571.7496337890625,
+          2922.7705078125,
+          4579.13330078125
+        ]
+      ],
+      "scores": [
+        0.5840980410575867
+      ]
+    },
+    "Mass-Training_P_01115_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_01513_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          16.241436004638672,
+          667.7398681640625,
+          2357.8759765625,
+          4350.5712890625
+        ]
+      ],
+      "scores": [
+        0.8134434819221497
+      ]
+    },
+    "Calc-Training_P_00666_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          1784.12060546875,
+          482.2028503417969,
+          3709.47265625,
+          4674.37158203125
+        ]
+      ],
+      "scores": [
+        0.8274640440940857
+      ]
+    },
+    "Calc-Training_P_00270_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          814.0873413085938,
+          772.481201171875,
+          2595.72802734375,
+          4594.3447265625
+        ]
+      ],
+      "scores": [
+        0.7957571148872375
+      ]
+    },
+    "Calc-Training_P_00523_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          552.903076171875,
+          26.811370849609375,
+          2644.3701171875,
+          4175.18701171875
+        ]
+      ],
+      "scores": [
+        0.5131406784057617
+      ]
+    },
+    "Mass-Training_P_01243_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_01246_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          28.295190811157227,
+          48.7546272277832,
+          1561.5802001953125,
+          4751.1611328125
+        ]
+      ],
+      "scores": [
+        0.5625152587890625
+      ]
+    },
+    "Calc-Training_P_02154_LEFT_CC.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_00639_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          459.5866394042969,
+          196.35501098632812,
+          3165.155029296875,
+          5068.36181640625
+        ]
+      ],
+      "scores": [
+        0.5029683709144592
+      ]
+    },
+    "Calc-Training_P_00243_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          961.097900390625,
+          1115.9691162109375,
+          2658.60107421875,
+          4433.3603515625
+        ]
+      ],
+      "scores": [
+        0.8030617237091064
+      ]
+    },
+    "Mass-Training_P_01650_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          6.62589168548584,
+          1008.1380615234375,
+          1205.5430908203125,
+          3785.02783203125
+        ]
+      ],
+      "scores": [
+        0.8735652565956116
+      ]
+    },
+    "Calc-Training_P_01420_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_01342_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          931.6449584960938,
+          37.379241943359375,
+          3794.43359375,
+          5594.4765625
+        ]
+      ],
+      "scores": [
+        0.5807244181632996
+      ]
+    },
+    "Calc-Training_P_00288_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_00226_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          13.503064155578613,
+          1309.1536865234375,
+          2139.671630859375,
+          5306.53857421875
+        ]
+      ],
+      "scores": [
+        0.7705948948860168
+      ]
+    },
+    "Calc-Training_P_00923_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          1391.4068603515625,
+          38.62458419799805,
+          2843.158203125,
+          4121.11083984375
+        ]
+      ],
+      "scores": [
+        0.5416280031204224
+      ]
+    },
+    "Calc-Training_P_01107_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          829.4121704101562,
+          637.0408325195312,
+          3811.5009765625,
+          5615.30517578125
+        ]
+      ],
+      "scores": [
+        0.6541391611099243
+      ]
+    },
+    "Calc-Training_P_01102_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01112_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          10.781631469726562,
+          466.0487060546875,
+          2040.6588134765625,
+          4725.9873046875
+        ]
+      ],
+      "scores": [
+        0.8585416674613953
+      ]
+    },
+    "Mass-Training_P_00911_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          10.751020431518555,
+          170.4069061279297,
+          1673.7882080078125,
+          4327.15869140625
+        ]
+      ],
+      "scores": [
+        0.82545006275177
+      ]
+    },
+    "Calc-Training_P_00469_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          938.668701171875,
+          1515.30859375,
+          2997.097412109375,
+          5405.86474609375
+        ]
+      ],
+      "scores": [
+        0.5771428346633911
+      ]
+    },
+    "Mass-Training_P_00634_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          9.287864685058594,
+          14.517520904541016,
+          1176.7025146484375,
+          3586.675048828125
+        ]
+      ],
+      "scores": [
+        0.5669441819190979
+      ]
+    },
+    "Mass-Training_P_00351_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          14.475957870483398,
+          474.3346862792969,
+          2832.2548828125,
+          5165.53369140625
+        ]
+      ],
+      "scores": [
+        0.8636503219604492
+      ]
+    },
+    "Mass-Training_P_00004_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01155_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          401.7931823730469,
+          97.11925506591797,
+          2471.34375,
+          4442.765625
+        ]
+      ],
+      "scores": [
+        0.547421395778656
+      ]
+    },
+    "Mass-Training_P_00051_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          10.767508506774902,
+          720.7589111328125,
+          1547.878662109375,
+          4196.48046875
+        ]
+      ],
+      "scores": [
+        0.8570497035980225
+      ]
+    },
+    "Mass-Training_P_00596_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_01276_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          936.5477294921875,
+          748.0396728515625,
+          2926.944580078125,
+          4307.3994140625
+        ]
+      ],
+      "scores": [
+        0.7908812165260315
+      ]
+    },
+    "Calc-Training_P_00378_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01876_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_00851_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          811.249755859375,
+          130.84129333496094,
+          4232.8388671875,
+          5896.22802734375
+        ]
+      ],
+      "scores": [
+        0.7337831258773804
+      ]
+    },
+    "Mass-Training_P_00572_RIGHT_CC.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_00684_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          1161.78125,
+          300.0575866699219,
+          2649.20751953125,
+          4079.668212890625
+        ]
+      ],
+      "scores": [
+        0.8303101658821106
+      ]
+    },
+    "Mass-Training_P_01356_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          11.253491401672363,
+          429.64459228515625,
+          2074.527099609375,
+          4964.21240234375
+        ]
+      ],
+      "scores": [
+        0.8505259156227112
+      ]
+    },
+    "Mass-Training_P_01039_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          98.1095199584961,
+          94.45409393310547,
+          3854.798583984375,
+          5565.8427734375
+        ]
+      ],
+      "scores": [
+        0.8544091582298279
+      ]
+    },
+    "Calc-Training_P_00832_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01062_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          614.9095458984375,
+          185.2716827392578,
+          2743.16943359375,
+          4151.369140625
+        ]
+      ],
+      "scores": [
+        0.826147198677063
+      ]
+    },
+    "Calc-Training_P_01084_LEFT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Calc-Training_P_00701_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          18.21639060974121,
+          853.945556640625,
+          2419.11083984375,
+          4228.77783203125
+        ]
+      ],
+      "scores": [
+        0.8607863783836365
+      ]
+    },
+    "Calc-Training_P_00270_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          867.4476318359375,
+          1849.5780029296875,
+          2829.428955078125,
+          4765.2041015625
+        ]
+      ],
+      "scores": [
+        0.500735342502594
+      ]
+    },
+    "Mass-Training_P_00224_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          8.454689025878906,
+          739.469970703125,
+          1846.010009765625,
+          4159.1806640625
+        ]
+      ],
+      "scores": [
+        0.8540558218955994
+      ]
+    },
+    "Calc-Training_P_02437_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          21.10056495666504,
+          490.06707763671875,
+          3819.389892578125,
+          5842.60791015625
+        ]
+      ],
+      "scores": [
+        0.8764194250106812
+      ]
+    },
+    "Calc-Training_P_00973_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01878_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          1076.55419921875,
+          20.06671714782715,
+          2831.797607421875,
+          4297.58251953125
+        ]
+      ],
+      "scores": [
+        0.5487064123153687
+      ]
+    },
+    "Calc-Training_P_02259_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          44.99393081665039,
+          733.606201171875,
+          2327.1669921875,
+          4430.4951171875
+        ]
+      ],
+      "scores": [
+        0.86248779296875
+      ]
+    },
+    "Mass-Training_P_01638_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          621.3602294921875,
+          1289.7908935546875,
+          2207.0634765625,
+          4692.51708984375
+        ]
+      ],
+      "scores": [
+        0.7651796340942383
+      ]
+    },
+    "Mass-Training_P_01328_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          9.702350616455078,
+          662.6060180664062,
+          1933.2584228515625,
+          4312.015625
+        ]
+      ],
+      "scores": [
+        0.8627054691314697
+      ]
+    },
+    "Mass-Training_P_01785_RIGHT_CC.jpg": {
+      "boxes": [
+        [
+          16.353458404541016,
+          601.7411499023438,
+          1966.144287109375,
+          4875.33056640625
+        ]
+      ],
+      "scores": [
+        0.7502161860466003
+      ]
+    },
+    "Calc-Training_P_01574_RIGHT_MLO.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_01357_LEFT_MLO.jpg": {
+      "boxes": [
+        [
+          8.106672286987305,
+          58.260772705078125,
+          1369.9459228515625,
+          3917.514892578125
+        ]
+      ],
+      "scores": [
+        0.7445828914642334
+      ]
+    },
+    "Mass-Training_P_00640_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          942.9013671875,
+          16.207504272460938,
+          2755.810302734375,
+          4739.26513671875
+        ]
+      ],
+      "scores": [
+        0.5037432312965393
+      ]
+    },
+    "Calc-Training_P_01777_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          14.244803428649902,
+          1272.568115234375,
+          2463.232421875,
+          5466.42529296875
+        ]
+      ],
+      "scores": [
+        0.8463031649589539
+      ]
+    },
+    "Calc-Training_P_01292_RIGHT_MLO.jpg": {
+      "boxes": [
+        [
+          29.697025299072266,
+          134.85919189453125,
+          3159.580322265625,
+          6005.97119140625
+        ]
+      ],
+      "scores": [
+        0.572596549987793
+      ]
+    },
+    "Calc-Training_P_00373_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          7.380544662475586,
+          862.2315673828125,
+          1189.312744140625,
+          3655.8193359375
+        ]
+      ],
+      "scores": [
+        0.8559809327125549
+      ]
+    },
+    "Mass-Training_P_01343_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          12.508495330810547,
+          50.617061614990234,
+          2068.59716796875,
+          4630.9921875
+        ]
+      ],
+      "scores": [
+        0.8453847765922546
+      ]
+    },
+    "Calc-Training_P_00621_LEFT_CC.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "Mass-Training_P_00988_LEFT_CC.jpg": {
+      "boxes": [
+        [
+          46.72422409057617,
+          703.8082885742188,
+          2517.0498046875,
+          5225.4228515625
+        ]
+      ],
+      "scores": [
+        0.8644158840179443
+      ]
+    }
+  },
+  "prompt": "A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",
+  "box_threshold": 0.5,
+  "text_threshold": 0.7
+}

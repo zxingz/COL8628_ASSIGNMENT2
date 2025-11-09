@@ -22,22 +22,22 @@ def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Train CoOp prompts on labeled datasets')
     
-    parser.add_argument('--train_path', type=str, required=True,
-                        help='Path to the training dataset')
-    parser.add_argument('--save_path', type=str, required=True,
-                        help='Path to save the trained model')
-    parser.add_argument('--epochs', type=int, default=50,
-                        help='Number of training epochs')
-    parser.add_argument('--lr', type=float, default=0.002,
-                        help='Learning rate')
-    parser.add_argument('--batch_size', type=int, default=32,
-                        help='Batch size for training')
-    parser.add_argument('--context_length', type=int, default=16,
-                        help='Length of context vectors')
-    parser.add_argument('--device', type=str, default='cuda',
-                        help='Device to use for computation (cuda/cpu)')
-    parser.add_argument('--seed', type=int, default=42,
-                        help='Random seed for reproducibility')
+    # parser.add_argument('--train_path', type=str, required=True,
+    #                     help='Path to the training dataset')
+    # parser.add_argument('--save_path', type=str, required=True,
+    #                     help='Path to save the trained model')
+    # parser.add_argument('--epochs', type=int, default=50,
+    #                     help='Number of training epochs')
+    # parser.add_argument('--lr', type=float, default=0.002,
+    #                     help='Learning rate')
+    # parser.add_argument('--batch_size', type=int, default=32,
+    #                     help='Batch size for training')
+    # parser.add_argument('--context_length', type=int, default=16,
+    #                     help='Length of context vectors')
+    # parser.add_argument('--device', type=str, default='cuda',
+    #                     help='Device to use for computation (cuda/cpu)')
+    # parser.add_argument('--seed', type=int, default=42,
+    #                     help='Random seed for reproducibility')
     
     return parser.parse_args()
 
@@ -80,28 +80,8 @@ def main():
     print("=" * 50)
     print("Task 2.1: CoOp Training")
     print("=" * 50)
-    print(f"Training dataset: {args.train_path}")
-    print(f"Save path: {args.save_path}")
-    print(f"Epochs: {args.epochs}")
-    print(f"Learning rate: {args.lr}")
-    print(f"Context length: {args.context_length}")
     
-    # Set random seed
-    torch.manual_seed(args.seed)
     
-    # Load training data
-    train_data = load_training_data(args.train_path)
-    
-    # Initialize model
-    model = initialize_coop_model(args)
-    
-    # Train model
-    train_model(model, train_data, args)
-    
-    # Save trained model
-    save_model(model, args.save_path)
-    
-    print(f"\nTraining completed. Model saved to: {args.save_path}")
 
 if __name__ == "__main__":
     main()

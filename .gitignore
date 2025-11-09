@@ -1,3 +1,12 @@
 .venv
 data
 models
+
+*.pyc
+*/*.pyc
+
+*.pkl
+*/*.pkl
+
+*.pth
+*/*.pth

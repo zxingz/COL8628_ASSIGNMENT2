@@ -21,16 +21,16 @@ def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Evaluate trained CoOp prompts')
     
-    parser.add_argument('--test_path', type=str, required=True,
-                        help='Path to the test dataset')
-    parser.add_argument('--model_path', type=str, required=True,
-                        help='Path to the trained CoOp model')
-    parser.add_argument('--output_dir', type=str, default='results/coop/',
-                        help='Directory to save evaluation results')
-    parser.add_argument('--batch_size', type=int, default=32,
-                        help='Batch size for evaluation')
-    parser.add_argument('--device', type=str, default='cuda',
-                        help='Device to use for computation (cuda/cpu)')
+    # parser.add_argument('--test_path', type=str, required=True,
+    #                     help='Path to the test dataset')
+    # parser.add_argument('--model_path', type=str, required=True,
+    #                     help='Path to the trained CoOp model')
+    # parser.add_argument('--output_dir', type=str, default='results/coop/',
+    #                     help='Directory to save evaluation results')
+    # parser.add_argument('--batch_size', type=int, default=32,
+    #                     help='Batch size for evaluation')
+    # parser.add_argument('--device', type=str, default='cuda',
+    #                     help='Device to use for computation (cuda/cpu)')
     
     return parser.parse_args()
 
@@ -83,32 +83,12 @@ def main():
     print("=" * 50)
     print("Task 2.1: CoOp Evaluation")
     print("=" * 50)
-    print(f"Test dataset: {args.test_path}")
-    print(f"Model path: {args.model_path}")
-    print(f"Output directory: {args.output_dir}")
     
-    # Load test data
-    test_data = load_test_data(args.test_path)
+    # Paths
+    data_path = os.path.join(str(Path(__file__).resolve().parent.parent.parent), "data")
+    results_path = os.path.join(str(Path(__file__).resolve().parent.parent.parent), "results", "task1")
     
-    # Load trained model
-    model = load_trained_model(args.model_path)
     
-    # Perform evaluation
-    predictions = evaluate_model(model, test_data, args)
-    
-    # Compute metrics
-    # TODO: Get ground truth labels
-    ground_truth = None
-    metrics = compute_metrics(predictions, ground_truth)
-    
-    # Save results
-    save_results(metrics, predictions, args.output_dir)
-    
-    print("\nCoOp Evaluation Results:")
-    for metric, value in metrics.items():
-        print(f"{metric}: {value:.4f}")
-    
-    print(f"\nResults saved to: {args.output_dir}")
 
 if __name__ == "__main__":
     main()
