@@ -54,6 +54,12 @@ class BertModel(BertPreTrainedModel):
         self.attn_implementation = config._attn_implementation
         self.position_embedding_type = config.position_embedding_type
 
+        # Trainable prompt embeddings used for CoOp
+        self.prompt_length = getattr(config, "coop_prompt_len", 16)
+        prompt_init = torch.randn(1, self.prompt_length, config.hidden_size)
+        self.prompt_embeddings = nn.Parameter(prompt_init)
+        self.prompt_embeddings.requires_grad_(True)
+
         # Initialize weights and apply final processing
         self.post_init()
 
@@ -100,18 +106,18 @@ class BertModel(BertPreTrainedModel):
         else:
             use_cache = False
 
-        if input_ids is not None and inputs_embeds is not None:
-            raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
-        elif input_ids is not None:
-            self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
-            input_shape = input_ids.size()
-        elif inputs_embeds is not None:
-            input_shape = inputs_embeds.size()[:-1]
-        else:
-            raise ValueError("You have to specify either input_ids or inputs_embeds")
+        if inputs_embeds is not None:
+            raise ValueError("This BertModel manages its own prompt embeddings; please provide input_ids only.")
+
+        if input_ids is None:
+            raise ValueError("You must provide input_ids for BertModel forward")
+
+        self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
+        input_shape = input_ids.size()
 
         batch_size, seq_length = input_shape
-        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        device = input_ids.device
+        prompt_len = self.prompt_length
 
         past_key_values_length = 0
         if past_key_values is not None:
@@ -129,6 +135,15 @@ class BertModel(BertPreTrainedModel):
             else:
                 token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=device)
 
+        # Offset text position ids so they follow the prompt tokens
+        if position_ids is None:
+            position_ids = torch.arange(prompt_len, prompt_len + seq_length, dtype=torch.long, device=device)
+            position_ids = position_ids.unsqueeze(0).expand(batch_size, -1)
+        else:
+            if position_ids.size(1) != seq_length:
+                position_ids = position_ids[:, -seq_length:]
+            position_ids = position_ids + prompt_len
+
         embedding_output = self.embeddings(
             input_ids=input_ids,
             position_ids=position_ids,
@@ -137,8 +152,39 @@ class BertModel(BertPreTrainedModel):
             past_key_values_length=past_key_values_length,
         )
 
+        # Prepare prompt embeddings (expand to batch, add positional & token type context)
+        prompt_embeddings = self.prompt_embeddings.expand(batch_size, -1, -1)
+
+        if self.embeddings.position_embeddings is not None:
+            prompt_position_ids = torch.arange(0, prompt_len, dtype=torch.long, device=device)
+            prompt_position_ids = prompt_position_ids.unsqueeze(0).expand(batch_size, -1)
+            prompt_position_embeddings = self.embeddings.position_embeddings(prompt_position_ids)
+        else:
+            prompt_position_embeddings = 0
+
+        prompt_token_type_ids = torch.zeros((batch_size, prompt_len), dtype=torch.long, device=device)
+        prompt_token_type_embeddings = self.embeddings.token_type_embeddings(prompt_token_type_ids)
+
+        prompt_embeddings = prompt_embeddings + prompt_position_embeddings + prompt_token_type_embeddings
+        prompt_embeddings = self.embeddings.LayerNorm(prompt_embeddings)
+        prompt_embeddings = self.embeddings.dropout(prompt_embeddings)
+
+        # Concatenate prompt tokens with text tokens
+        embedding_output = torch.cat([prompt_embeddings, embedding_output], dim=1)
+        seq_length = seq_length + prompt_len
+        input_shape = (batch_size, seq_length)
+
         if attention_mask is None:
             attention_mask = torch.ones((batch_size, seq_length + past_key_values_length), device=device)
+        else:
+            if attention_mask.dim() == 2:
+                prompt_attention_mask = attention_mask.new_ones((batch_size, prompt_len))
+                attention_mask = torch.cat([prompt_attention_mask, attention_mask], dim=1)
+            elif attention_mask.dim() == 3:
+                new_mask = attention_mask.new_zeros((batch_size, seq_length, seq_length))
+                orig_len = attention_mask.size(1)
+                new_mask[:, prompt_len : prompt_len + orig_len, prompt_len : prompt_len + orig_len] = attention_mask
+                attention_mask = new_mask
 
         use_sdpa_attention_masks = (
             self.attn_implementation == "sdpa"
@@ -206,19 +252,35 @@ class BertModel(BertPreTrainedModel):
             return_dict=return_dict,
             cache_position=cache_position,
         )
-        sequence_output = encoder_outputs[0]
+        sequence_output = encoder_outputs[0][:, prompt_len:, :]
+
         pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
 
         if not return_dict:
-            return (sequence_output, pooled_output) + encoder_outputs[1:]
+            outputs = (sequence_output, pooled_output)
+            if len(encoder_outputs) > 1:
+                trimmed = []
+                for item in encoder_outputs[1:]:
+                    if isinstance(item, tuple) and len(item) > 0 and item[0].dim() == 3:
+                        trimmed.append(tuple(state[:, prompt_len:, :] for state in item))
+                    else:
+                        trimmed.append(item)
+                outputs += tuple(trimmed)
+            return outputs
+
+        hidden_states = encoder_outputs.hidden_states
+        if hidden_states is not None:
+            hidden_states = tuple(state[:, prompt_len:, :] for state in hidden_states)
+
+        cross_attentions = getattr(encoder_outputs, "cross_attentions", None)
 
         return BaseModelOutputWithPoolingAndCrossAttentions(
             last_hidden_state=sequence_output,
             pooler_output=pooled_output,
             past_key_values=encoder_outputs.past_key_values,
-            hidden_states=encoder_outputs.hidden_states,
+            hidden_states=hidden_states,
             attentions=encoder_outputs.attentions,
-            cross_attentions=encoder_outputs.cross_attentions,
+            cross_attentions=cross_attentions,
         )
     
 class GDinoCoop(nn.Module):
@@ -226,29 +288,32 @@ class GDinoCoop(nn.Module):
         super().__init__()
         self.model = model
         
-        # # Freeze the entire base model
-        # for param in self.model.parameters():
-        #     param.requires_grad = False
-            
-        # Text backbone
+        # Text backbone with internal trainable prompt
+        if not hasattr(model, "model") or not hasattr(model.model, "text_backbone"):
+            raise RuntimeError("Expected underlying Grounding DINO model to expose a text_backbone")
+
         text_backbone = model.model.text_backbone
 
-        # Access the text backbone directly
-        embed_dim = self.model.config.text_config.hidden_size
+        # Resize prompt if requested length differs from backbone default
+        if text_backbone.prompt_length != prompt_length:
+            new_prompt = torch.randn(
+                1,
+                prompt_length,
+                text_backbone.config.hidden_size,
+                device=text_backbone.prompt_embeddings.device,
+            )
+            text_backbone.prompt_embeddings = nn.Parameter(new_prompt)
+            text_backbone.prompt_length = prompt_length
 
-        # Learnable prompt
-        self.prompt_len = prompt_length
-        self.prompt = nn.Parameter(torch.randn(1, self.prompt_len, embed_dim))
-        self.prompt.requires_grad = True
+        # Freeze all parameters except the prompt embeddings
+        for name, param in self.model.named_parameters():
+            if "prompt_embeddings" in name:
+                continue
+            param.requires_grad = False
+
+        text_backbone.prompt_embeddings.requires_grad_(True)
 
     def forward(self, **kwargs):
-        # Attach the learnable prompt to the BERT text backbone for this forward
-        # It will be consumed inside BertModel.forward by concatenating to token embeddings
-        if hasattr(self.model, 'model') and hasattr(self.model.model, 'text_backbone'):
-            self.model.model.text_backbone.coop_prompt = self.prompt
-        else:
-            raise RuntimeError("Underlying model does not expose a BERT text_backbone")
-
         return self.model(**kwargs)
 
 def load_model(device):
@@ -263,7 +328,11 @@ def load_model(device):
     bert_model = BertModel(cfg.text_config)
     model.model.text_backbone = bert_model
     
-    model.load_state_dict(state)
+    missing, unexpected = model.load_state_dict(state, strict=False)
+    if missing:
+        print(f"Warning: missing keys when loading weights: {missing}")
+    if unexpected:
+        print(f"Warning: unexpected keys when loading weights: {unexpected}")
     model.to(device)
     
     model_id = "IDEA-Research/grounding-dino-tiny"
@@ -410,6 +479,7 @@ def train_model(model, processor, train_data, args):
 
             total_loss += loss.item()
             num_batches += 1
+            print(f"Epoch {epoch+1}, Batch {num_batches}, Loss: {loss.item():.4f}")
 
         avg_loss = total_loss / num_batches
         print(f"Epoch {epoch+1}/{args.epochs}, Average Loss: {avg_loss:.4f}")
