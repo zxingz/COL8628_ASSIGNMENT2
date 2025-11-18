@@ -16,6 +16,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Optional, Union
 
 sys.path.insert(0, os.path.join(str(Path(__file__).resolve().parent.parent.parent)))
 from utils.data_utils import DataSet
@@ -26,20 +27,237 @@ import torch.nn as nn
 from torchmetrics.detection import MeanAveragePrecision
 
 from transformers import AutoProcessor, AutoModelForZeroShotObjectDetection
+from transformers.models.grounding_dino.modeling_grounding_dino import GroundingDinoForObjectDetection
+from transformers.models.grounding_dino.configuration_grounding_dino import GroundingDinoConfig
+from transformers.models.bert.modeling_bert import BertPreTrainedModel, BertEmbeddings, BertEncoder, BertPooler
+from transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAttentions
+from transformers.utils.auto_docstring import auto_docstring
+from transformers.models.bert.modeling_bert import Cache
+from transformers.modeling_attn_mask_utils import _prepare_4d_attention_mask_for_sdpa, _prepare_4d_causal_attention_mask_for_sdpa
 
+class BertModel(BertPreTrainedModel):
+    _no_split_modules = ["BertEmbeddings", "BertLayer"]
 
-import torch
-import torch.nn as nn
+    def __init__(self, config, add_pooling_layer=False):
+        r"""
+        add_pooling_layer (bool, *optional*, defaults to `True`):
+            Whether to add a pooling layer
+        """
+        super().__init__(config)
+        self.config = config
 
-import torch
-import torch.nn as nn
+        self.embeddings = BertEmbeddings(config)
+        self.encoder = BertEncoder(config)
 
-import torch
-import torch.nn as nn
+        self.pooler = BertPooler(config) if add_pooling_layer else None
 
-import torch
-import torch.nn as nn
+        self.attn_implementation = config._attn_implementation
+        self.position_embedding_type = config.position_embedding_type
 
+        # Initialize weights and apply final processing
+        self.post_init()
+
+    def get_input_embeddings(self):
+        return self.embeddings.word_embeddings
+
+    def set_input_embeddings(self, value):
+        self.embeddings.word_embeddings = value
+
+    def _prune_heads(self, heads_to_prune):
+        """
+        Prunes heads of the model. heads_to_prune: dict of {layer_num: list of heads to prune in this layer} See base
+        class PreTrainedModel
+        """
+        for layer, heads in heads_to_prune.items():
+            self.encoder.layer[layer].attention.prune_heads(heads)
+
+    @auto_docstring
+    def forward(
+        self,
+        input_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        token_type_ids: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.Tensor] = None,
+        head_mask: Optional[torch.Tensor] = None,
+        inputs_embeds: Optional[torch.Tensor] = None,
+        encoder_hidden_states: Optional[torch.Tensor] = None,
+        encoder_attention_mask: Optional[torch.Tensor] = None,
+        past_key_values: Optional[Cache] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+        cache_position: Optional[torch.Tensor] = None,
+    ) -> Union[tuple[torch.Tensor], BaseModelOutputWithPoolingAndCrossAttentions]:
+        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        output_hidden_states = (
+            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        )
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        if self.config.is_decoder:
+            use_cache = use_cache if use_cache is not None else self.config.use_cache
+        else:
+            use_cache = False
+
+        if input_ids is not None and inputs_embeds is not None:
+            raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+
+        # Detect whether CoOp prompt is attached to this text backbone
+        use_coop = hasattr(self, "coop_prompt") and self.coop_prompt is not None
+
+        # If using CoOp, we will build inputs_embeds by concatenating the prompt embeddings
+        if use_coop:
+            # Build token embeddings from ids if necessary
+            if inputs_embeds is None:
+                if input_ids is None:
+                    raise ValueError("CoOp mode requires input_ids or inputs_embeds")
+                self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
+                token_embeds = self.embeddings.word_embeddings(input_ids)
+                device = input_ids.device
+                batch_size = input_ids.size(0)
+            else:
+                token_embeds = inputs_embeds
+                device = token_embeds.device
+                batch_size = token_embeds.size(0)
+
+            # Expand and prepend learnable prompt
+            prompt_len = self.coop_prompt.size(1)
+            prompt = self.coop_prompt.to(token_embeds.device).expand(batch_size, -1, -1)
+            inputs_embeds = torch.cat([prompt, token_embeds], dim=1)  # [B, P+L, D]
+            input_ids = None  # ensure embeddings path is used below
+
+            # Build/extend attention mask to cover prompt tokens
+            if attention_mask is None:
+                attention_mask = torch.ones((batch_size, inputs_embeds.size(1)), device=device)
+            else:
+                ones = torch.ones((batch_size, prompt_len), device=attention_mask.device, dtype=attention_mask.dtype)
+                attention_mask = torch.cat([ones, attention_mask], dim=1)
+
+            input_shape = inputs_embeds.size()[:-1]
+            batch_size, seq_length = input_shape
+        else:
+            if input_ids is not None:
+                self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
+                input_shape = input_ids.size()
+                device = input_ids.device
+            elif inputs_embeds is not None:
+                input_shape = inputs_embeds.size()[:-1]
+                device = inputs_embeds.device
+            else:
+                raise ValueError("You have to specify either input_ids or inputs_embeds")
+
+            batch_size, seq_length = input_shape
+
+        past_key_values_length = 0
+        if past_key_values is not None:
+            past_key_values_length = (
+                past_key_values[0][0].shape[-2]
+                if not isinstance(past_key_values, Cache)
+                else past_key_values.get_seq_length()
+            )
+
+        if token_type_ids is None:
+            if hasattr(self.embeddings, "token_type_ids"):
+                buffered_token_type_ids = self.embeddings.token_type_ids[:, :seq_length]
+                buffered_token_type_ids_expanded = buffered_token_type_ids.expand(batch_size, seq_length)
+                token_type_ids = buffered_token_type_ids_expanded
+            else:
+                token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=device)
+
+        # Build final embedding output (word + position + token type)
+        embedding_output = self.embeddings(
+            input_ids=input_ids,
+            position_ids=position_ids,
+            token_type_ids=token_type_ids,
+            inputs_embeds=inputs_embeds,
+            past_key_values_length=past_key_values_length,
+        )
+
+        if attention_mask is None:
+            attention_mask = torch.ones((batch_size, seq_length + past_key_values_length), device=device)
+
+        use_sdpa_attention_masks = (
+            self.attn_implementation == "sdpa"
+            and self.position_embedding_type == "absolute"
+            and head_mask is None
+            and not output_attentions
+        )
+
+        # Expand the attention mask
+        if use_sdpa_attention_masks and attention_mask.dim() == 2:
+            # Expand the attention mask for SDPA.
+            # [bsz, seq_len] -> [bsz, 1, seq_len, seq_len]
+            if self.config.is_decoder:
+                extended_attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
+                    attention_mask,
+                    input_shape,
+                    embedding_output,
+                    past_key_values_length,
+                )
+            else:
+                extended_attention_mask = _prepare_4d_attention_mask_for_sdpa(
+                    attention_mask, embedding_output.dtype, tgt_len=seq_length
+                )
+        else:
+            # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
+            # ourselves in which case we just need to make it broadcastable to all heads.
+            extended_attention_mask = self.get_extended_attention_mask(attention_mask, input_shape)
+
+        # If a 2D or 3D attention mask is provided for the cross-attention
+        # we need to make broadcastable to [batch_size, num_heads, seq_length, seq_length]
+        if self.config.is_decoder and encoder_hidden_states is not None:
+            encoder_batch_size, encoder_sequence_length, _ = encoder_hidden_states.size()
+            encoder_hidden_shape = (encoder_batch_size, encoder_sequence_length)
+            if encoder_attention_mask is None:
+                encoder_attention_mask = torch.ones(encoder_hidden_shape, device=device)
+
+            if use_sdpa_attention_masks and encoder_attention_mask.dim() == 2:
+                # Expand the attention mask for SDPA.
+                # [bsz, seq_len] -> [bsz, 1, seq_len, seq_len]
+                encoder_extended_attention_mask = _prepare_4d_attention_mask_for_sdpa(
+                    encoder_attention_mask, embedding_output.dtype, tgt_len=seq_length
+                )
+            else:
+                encoder_extended_attention_mask = self.invert_attention_mask(encoder_attention_mask)
+        else:
+            encoder_extended_attention_mask = None
+
+        # Prepare head mask if needed
+        # 1.0 in head_mask indicate we keep the head
+        # attention_probs has shape bsz x n_heads x N x N
+        # input head_mask has shape [num_heads] or [num_hidden_layers x num_heads]
+        # and head_mask is converted to shape [num_hidden_layers x batch x num_heads x seq_length x seq_length]
+        head_mask = self.get_head_mask(head_mask, self.config.num_hidden_layers)
+
+        encoder_outputs = self.encoder(
+            embedding_output,
+            attention_mask=extended_attention_mask,
+            head_mask=head_mask,
+            encoder_hidden_states=encoder_hidden_states,
+            encoder_attention_mask=encoder_extended_attention_mask,
+            past_key_values=past_key_values,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+            cache_position=cache_position,
+        )
+        sequence_output = encoder_outputs[0]
+        pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
+
+        if not return_dict:
+            return (sequence_output, pooled_output) + encoder_outputs[1:]
+
+        return BaseModelOutputWithPoolingAndCrossAttentions(
+            last_hidden_state=sequence_output,
+            pooler_output=pooled_output,
+            past_key_values=encoder_outputs.past_key_values,
+            hidden_states=encoder_outputs.hidden_states,
+            attentions=encoder_outputs.attentions,
+            cross_attentions=encoder_outputs.cross_attentions,
+        )
+    
 class GDinoCoop(nn.Module):
     def __init__(self, model, prompt_length=16):
         super().__init__()
@@ -48,9 +266,13 @@ class GDinoCoop(nn.Module):
         # Freeze the entire base model
         for param in self.model.parameters():
             param.requires_grad = False
+            
+        # Text backbone
+        text_backbone = model.model.text_backbone
+
+        print(self.model.config.text_config)
 
         # Access the text backbone directly
-        self.text_backbone = self.model.model.text_backbone
         embed_dim = self.model.config.text_config.hidden_size
 
         # Learnable prompt
@@ -59,85 +281,35 @@ class GDinoCoop(nn.Module):
         self.prompt.requires_grad = True
 
     def forward(self, **kwargs):
-        input_ids = kwargs.pop("input_ids")
-        attention_mask = kwargs.pop("attention_mask")
-        token_type_ids = kwargs.pop("token_type_ids", None)
-        labels = kwargs.pop("labels", None)
-        
-        device = input_ids.device
+        # Attach the learnable prompt to the BERT text backbone for this forward
+        # It will be consumed inside BertModel.forward by concatenating to token embeddings
+        if hasattr(self.model, 'model') and hasattr(self.model.model, 'text_backbone'):
+            self.model.model.text_backbone.coop_prompt = self.prompt
+        else:
+            raise RuntimeError("Underlying model does not expose a BERT text_backbone")
 
-        # =========================================
-        # 1. Prepare Custom Embeddings (Injection)
-        # =========================================
-        # Get original embeddings for the input text
-        word_embeddings = self.text_backbone.embeddings.word_embeddings(input_ids)
-        
-        # Expand learnable prompt to batch size
-        prompt_embeds = self.prompt.expand(word_embeddings.size(0), -1, -1)
-        
-        # Concatenate: [Prompt Embeds] + [Original Text Embeds (minus CLS)]
-        # We skip the first token ([CLS]) of the original text as the prompt takes its place.
-        shifted_word_embeddings = word_embeddings[:, 1:, :]
-        inputs_embeds = torch.cat([prompt_embeds, shifted_word_embeddings], dim=1)
-
-        # =========================================
-        # 2. Adjust Masks and IDs for new length
-        # =========================================
-        # Extend attention mask to cover the prompt
-        prompt_attention_mask = torch.ones(attention_mask.size(0), self.prompt_len, device=device, dtype=attention_mask.dtype)
-        new_attention_mask = torch.cat([prompt_attention_mask, attention_mask[:, 1:]], dim=1)
-
-        # Adjust token_type_ids if they exist (needed for some BERT-like backbones)
-        prompt_token_type_ids = torch.zeros(token_type_ids.size(0), self.prompt_len, dtype=token_type_ids.dtype, device=device)
-        new_token_type_ids = torch.cat([prompt_token_type_ids, token_type_ids[:, 1:]], dim=1)
-            
-            
-        # =========================================
-        # 3. Monkey-Patch embeddings
-        # =========================================
-        # Save the original
-        
-        original_word_embeddings = self.text_backbone.embeddings.word_embeddings
-
-        # Define the temporary patch
-        def patched_word_embeddings(*args, **kwargs):
-            return inputs_embeds
-
-        # Apply the patch
-        self.text_backbone.word_embeddings = patched_word_embeddings
-
-        # Create dummy input_ids just to satisfy top-level shape checks.
-        # The values don't matter as our patch ignores them.
-        dummy_input_ids = torch.zeros(
-            (input_ids.shape[0], inputs_embeds.shape[1]), 
-            dtype=torch.long, 
-            device=device
-        )
-
-        # Call the main model
-        outputs = self.model(
-            input_ids=dummy_input_ids,
-            attention_mask=new_attention_mask,
-            token_type_ids=new_token_type_ids,
-            labels=labels,
-            return_dict=True,
-            **kwargs # Pass any remaining kwargs (like pixel_values)
-        )
-        
-        # CRITICAL: Always restore the original method
-        self.text_backbone.embeddings.word_embeddings = original_word_embeddings
-        
-
-        return outputs
+        return self.model(**kwargs)
     
 
 def load_model(device):
     """Loads the Grounding-DINO model and processor."""
     print("Loading Grounding-DINO model... (This may take a moment)")
-    model_id = "IDEA-Research/grounding-dino-tiny"
     
+    load_path = "models/grounding_dino_tiny.pth"
+    state = torch.load(load_path, map_location=device)
+    cfg = GroundingDinoConfig()
+    
+    model = GroundingDinoForObjectDetection(cfg)
+    bert_model = BertModel(cfg.text_config)
+    model.model.text_backbone = bert_model
+    
+    model.load_state_dict(state)
+    model.to(device)
+    
+    model_id = "IDEA-Research/grounding-dino-tiny"
     processor = AutoProcessor.from_pretrained(model_id)
-    model = AutoModelForZeroShotObjectDetection.from_pretrained(model_id).to(device)
+    
+    # model = AutoModelForZeroShotObjectDetection.from_pretrained(model_id).to(device)
     
     print("Model loaded successfully.")
     return model, processor
@@ -148,21 +320,50 @@ def get_batches(dataset, default_prompt="This is a Mamogram", batch_size=8):
     for i in range(0, len(dataset.df), batch_size):
         
         # list of prompts
-        batch_prompts = [default_prompt] * batch_size
+        batch_prompts = [default_prompt] * min(batch_size, len(dataset.df) - i)
         
         # list of labels
-        batch_labels = dataset.df.iloc[i:i+batch_size]["pathology"]
+        batch_labels = dataset.df.iloc[i:i+batch_size]["pathology"].tolist()
         
         # list of bounding box
-        batch_boxes = dataset.df.iloc[i:i+batch_size] \
-                    .apply(lambda x: (x["xmin"], x["ymin"], x["xmax"], x["ymax"]), axis=1) \
-                    .tolist()
+        batch_boxes = []
+        for _, row in dataset.df.iloc[i:i+batch_size].iterrows():
+            if row.isnull().any():  # Benign case has NaNs
+                batch_boxes.append([])
+            else:
+                batch_boxes.append([(row["xmin"], row["ymin"], row["xmax"], row["ymax"])])
         
         # list of PIL images
         images = dataset.df.iloc[i:i+batch_size].apply(lambda x: dataset.load_image(x["image_name"]), axis=1).tolist()
         
         yield batch_prompts, batch_labels, batch_boxes, images
 
+def smoke_test_forward_minimal(model, processor, device):
+    """Run a tiny forward pass on synthetic data to validate CoOp wiring."""
+    from PIL import Image
+    # Create two dummy RGB images
+    img1 = Image.new('RGB', (256, 256), color=(128, 128, 128))
+    img2 = Image.new('RGB', (256, 256), color=(64, 64, 64))
+    prompts = ["This is a Mammogram", "This is a Mammogram"]
+
+    inputs = processor(images=[img1, img2], text=prompts, return_tensors="pt")
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+
+    # Forward without labels to just ensure it runs and returns outputs
+    with torch.no_grad():
+        out = model(**inputs, return_dict=True)
+
+    print("Smoke test forward: ok. Keys:", list(out.keys()) if hasattr(out, 'keys') else type(out))
+    # Quick check that prompt participates and is trainable
+    prompt_param = None
+    for n, p in model.named_parameters():
+        if 'prompt' in n:
+            prompt_param = p
+            break
+    if prompt_param is not None:
+        print(f"Prompt shape: {tuple(prompt_param.shape)}, requires_grad={prompt_param.requires_grad}")
+    else:
+        print("Warning: prompt parameter not found in model parameters")
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -212,12 +413,12 @@ def train_model(model, processor, train_data, args):
     for epoch in range(args.epochs):
         total_loss = 0
         num_batches = 0
-
+        
         batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=args.batch_size)
 
         for batch_prompts, batch_class_labels, batch_boxes, batch_pil_images in batch_generator:
             optimizer.zero_grad()
-
+            
             # Prepare labels in the format expected by the model
             labels = []
             for boxes, class_labels in zip(batch_boxes, batch_class_labels):
@@ -229,7 +430,7 @@ def train_model(model, processor, train_data, args):
                         "class_labels": torch.zeros(len(boxes), dtype=torch.long, device=device),
                         "boxes": torch.tensor(boxes, dtype=torch.float, device=device)
                     })
-                else: # Benign cases
+                else:  # Benign cases
                     labels.append({
                         "class_labels": torch.tensor([], dtype=torch.long, device=device),
                         "boxes": torch.tensor([], dtype=torch.float, device=device).reshape(-1, 4)
@@ -240,9 +441,9 @@ def train_model(model, processor, train_data, args):
             inputs = {k: v.to(device) for k, v in inputs.items()}
 
             # Forward pass
-            outputs = model(**inputs, labels=labels)
+            outputs = model(**inputs, labels=labels, return_dict=True)
             loss = outputs.loss
-
+            
             # Backward pass and optimization
             loss.backward()
             optimizer.step()
@@ -281,14 +482,14 @@ def main():
 
     # For demonstration, using hardcoded args
     from argparse import Namespace
-    args = Namespace(epochs=10, lr=0.001, batch_size=4, context_length=16)
+    # Keep defaults small for quick iteration; adjust as needed
+    args = Namespace(epochs=1, lr=0.001, batch_size=2, context_length=16)
     
     # Set random seed
     torch.manual_seed(10)
     
     # Setup device
     # device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = torch.device('cpu')
     print(f"Using device: {device}")
     
@@ -302,24 +503,28 @@ def main():
     
     # Dataset A
     train_A = DataSet(data_path=data_path, name="A", label="train")
-    test_A = DataSet(data_path=data_path, name="A", label="test")
+    # test_A = DataSet(data_path=data_path, name="A", label="test")
     
-    # Dataset B
-    train_B = DataSet(data_path=data_path, name="B", label="train")
-    test_B = DataSet(data_path=data_path, name="B", label="test")
+    # # Dataset B
+    # train_B = DataSet(data_path=data_path, name="B", label="train")
+    # test_B = DataSet(data_path=data_path, name="B", label="test")
     
-    # Dataset C
-    train_C = DataSet(data_path=data_path, name="C", label="train")
-    test_C = DataSet(data_path=data_path, name="C", label="test")
+    # # Dataset C
+    # train_C = DataSet(data_path=data_path, name="C", label="train")
+    # test_C = DataSet(data_path=data_path, name="C", label="test")
     
     # Initialize CoOp model
     coop_model = GDinoCoop(base_model, prompt_length=args.context_length).to(device)
 
-    # For this example, we'll train on Dataset A
+    # Quick smoke test to ensure forward works with the learnable prompt
+    print("\nRunning smoke test forward (synthetic data)...")
+    smoke_test_forward_minimal(coop_model, processor, device)
+
+    # Train on Dataset A (one epoch by default for a light run)
     print("\nTraining on Dataset A...")
     train_model(coop_model, processor, train_A, args)
     
-    # Save the trained model prompt
+    # Save the trained prompt
     save_model(coop_model, save_path)
 
 if __name__ == "__main__":
