@@ -170,7 +170,7 @@ class BertModel(BertPreTrainedModel):
         prompt_embeddings = self.embeddings.dropout(prompt_embeddings)
 
         # Concatenate prompt tokens with text tokens
-        embedding_output = torch.cat([prompt_embeddings, embedding_output], dim=1)
+        embedding_output = torch.cat([prompt_embeddings, embedding_output], dim=1).contiguous()
         seq_length = seq_length + prompt_len
         input_shape = (batch_size, seq_length)
 
@@ -252,7 +252,16 @@ class BertModel(BertPreTrainedModel):
             return_dict=return_dict,
             cache_position=cache_position,
         )
-        sequence_output = encoder_outputs[0][:, prompt_len:, :]
+        seq_without_prompt = max(encoder_outputs[0].size(1) - prompt_len, 0)
+        if seq_without_prompt > 0:
+            sequence_output = encoder_outputs[0].narrow(1, prompt_len, seq_without_prompt).contiguous()
+        else:
+            sequence_output = encoder_outputs[0].new_zeros((batch_size, 0, encoder_outputs[0].size(-1)))
+
+        if sequence_output.size(0) != batch_size:
+            raise RuntimeError(
+                f"Unexpected batch dimension after prompt trimming: got {sequence_output.size(0)}, expected {batch_size}."
+            )
 
         pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
 
@@ -261,8 +270,18 @@ class BertModel(BertPreTrainedModel):
             if len(encoder_outputs) > 1:
                 trimmed = []
                 for item in encoder_outputs[1:]:
-                    if isinstance(item, tuple) and len(item) > 0 and item[0].dim() == 3:
-                        trimmed.append(tuple(state[:, prompt_len:, :] for state in item))
+                    if isinstance(item, tuple) and len(item) > 0 and item[0] is not None and item[0].dim() == 3:
+                        trimmed_tuple = []
+                        for state in item:
+                            if state is None:
+                                trimmed_tuple.append(None)
+                            else:
+                                if seq_without_prompt > 0:
+                                    trimmed_slice = state.narrow(1, prompt_len, seq_without_prompt).contiguous()
+                                else:
+                                    trimmed_slice = state.new_zeros((batch_size, 0, state.size(-1)))
+                                trimmed_tuple.append(trimmed_slice)
+                        trimmed.append(tuple(trimmed_tuple))
                     else:
                         trimmed.append(item)
                 outputs += tuple(trimmed)
@@ -270,7 +289,17 @@ class BertModel(BertPreTrainedModel):
 
         hidden_states = encoder_outputs.hidden_states
         if hidden_states is not None:
-            hidden_states = tuple(state[:, prompt_len:, :] for state in hidden_states)
+            trimmed_states = []
+            for state in hidden_states:
+                if state is None:
+                    trimmed_states.append(None)
+                else:
+                    if seq_without_prompt > 0:
+                        trimmed_slice = state.narrow(1, prompt_len, seq_without_prompt).contiguous()
+                    else:
+                        trimmed_slice = state.new_zeros((batch_size, 0, state.size(-1)))
+                    trimmed_states.append(trimmed_slice)
+            hidden_states = tuple(trimmed_states)
 
         cross_attentions = getattr(encoder_outputs, "cross_attentions", None)
 
@@ -349,7 +378,8 @@ def get_batches(dataset, default_prompt="This is a Mamogram", batch_size=8):
     for i in range(0, len(dataset.df), batch_size):
         
         # list of prompts
-        batch_prompts = [default_prompt] * min(batch_size, len(dataset.df) - i)
+        prompt_count = min(batch_size, len(dataset.df) - i)
+        batch_prompts = [[default_prompt] for _ in range(prompt_count)]
         
         # list of labels
         batch_labels = dataset.df.iloc[i:i+batch_size]["pathology"].tolist()
@@ -443,7 +473,7 @@ def train_model(model, processor, train_data, args):
         total_loss = 0
         num_batches = 0
         
-        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=1)
+        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=2)
 
         for batch_prompts, batch_class_labels, batch_boxes, batch_pil_images in batch_generator:
             optimizer.zero_grad()
