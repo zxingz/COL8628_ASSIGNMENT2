@@ -135,7 +135,8 @@ def save_results(metrics, predictions, output_dir):
 def load_model(device):
     """Loads the Grounding-DINO model and processor."""
     print("Loading Grounding-DINO model... (This may take a moment)")
-    model_id = "IDEA-Research/grounding-dino-base"
+    # model_id = "IDEA-Research/grounding-dino-base"
+    model_id = "IDEA-Research/grounding-dino-tiny"
     
     processor = AutoProcessor.from_pretrained(model_id)
     model = AutoModelForZeroShotObjectDetection.from_pretrained(model_id).to(device)
@@ -285,7 +286,7 @@ def main():
                     "text_threshold": text_threshold,
                 }
                 
-                with open(os.path.join(results_path, str(uuid4()) + ".json"), "w") as f:
+                with open(os.path.join(results_path, str(uuid4()) + "___.json"), "w") as f:
                     json.dump(res, f, indent=2)
 
 

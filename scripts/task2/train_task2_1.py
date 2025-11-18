@@ -102,52 +102,16 @@ class BertModel(BertPreTrainedModel):
 
         if input_ids is not None and inputs_embeds is not None:
             raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
-
-        # Detect whether CoOp prompt is attached to this text backbone
-        use_coop = hasattr(self, "coop_prompt") and self.coop_prompt is not None
-
-        # If using CoOp, we will build inputs_embeds by concatenating the prompt embeddings
-        if use_coop:
-            # Build token embeddings from ids if necessary
-            if inputs_embeds is None:
-                if input_ids is None:
-                    raise ValueError("CoOp mode requires input_ids or inputs_embeds")
-                self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
-                token_embeds = self.embeddings.word_embeddings(input_ids)
-                device = input_ids.device
-                batch_size = input_ids.size(0)
-            else:
-                token_embeds = inputs_embeds
-                device = token_embeds.device
-                batch_size = token_embeds.size(0)
-
-            # Expand and prepend learnable prompt
-            prompt_len = self.coop_prompt.size(1)
-            prompt = self.coop_prompt.to(token_embeds.device).expand(batch_size, -1, -1)
-            inputs_embeds = torch.cat([prompt, token_embeds], dim=1)  # [B, P+L, D]
-            input_ids = None  # ensure embeddings path is used below
-
-            # Build/extend attention mask to cover prompt tokens
-            if attention_mask is None:
-                attention_mask = torch.ones((batch_size, inputs_embeds.size(1)), device=device)
-            else:
-                ones = torch.ones((batch_size, prompt_len), device=attention_mask.device, dtype=attention_mask.dtype)
-                attention_mask = torch.cat([ones, attention_mask], dim=1)
-
+        elif input_ids is not None:
+            self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
+            input_shape = input_ids.size()
+        elif inputs_embeds is not None:
             input_shape = inputs_embeds.size()[:-1]
-            batch_size, seq_length = input_shape
         else:
-            if input_ids is not None:
-                self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
-                input_shape = input_ids.size()
-                device = input_ids.device
-            elif inputs_embeds is not None:
-                input_shape = inputs_embeds.size()[:-1]
-                device = inputs_embeds.device
-            else:
-                raise ValueError("You have to specify either input_ids or inputs_embeds")
+            raise ValueError("You have to specify either input_ids or inputs_embeds")
 
-            batch_size, seq_length = input_shape
+        batch_size, seq_length = input_shape
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
 
         past_key_values_length = 0
         if past_key_values is not None:
@@ -165,7 +129,6 @@ class BertModel(BertPreTrainedModel):
             else:
                 token_type_ids = torch.zeros(input_shape, dtype=torch.long, device=device)
 
-        # Build final embedding output (word + position + token type)
         embedding_output = self.embeddings(
             input_ids=input_ids,
             position_ids=position_ids,
@@ -263,14 +226,12 @@ class GDinoCoop(nn.Module):
         super().__init__()
         self.model = model
         
-        # Freeze the entire base model
-        for param in self.model.parameters():
-            param.requires_grad = False
+        # # Freeze the entire base model
+        # for param in self.model.parameters():
+        #     param.requires_grad = False
             
         # Text backbone
         text_backbone = model.model.text_backbone
-
-        print(self.model.config.text_config)
 
         # Access the text backbone directly
         embed_dim = self.model.config.text_config.hidden_size
@@ -289,7 +250,6 @@ class GDinoCoop(nn.Module):
             raise RuntimeError("Underlying model does not expose a BERT text_backbone")
 
         return self.model(**kwargs)
-    
 
 def load_model(device):
     """Loads the Grounding-DINO model and processor."""
@@ -414,7 +374,7 @@ def train_model(model, processor, train_data, args):
         total_loss = 0
         num_batches = 0
         
-        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=args.batch_size)
+        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=1)
 
         for batch_prompts, batch_class_labels, batch_boxes, batch_pil_images in batch_generator:
             optimizer.zero_grad()
@@ -489,8 +449,8 @@ def main():
     torch.manual_seed(10)
     
     # Setup device
-    # device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cpu')
     print(f"Using device: {device}")
     
     # Paths
@@ -516,9 +476,9 @@ def main():
     # Initialize CoOp model
     coop_model = GDinoCoop(base_model, prompt_length=args.context_length).to(device)
 
-    # Quick smoke test to ensure forward works with the learnable prompt
-    print("\nRunning smoke test forward (synthetic data)...")
-    smoke_test_forward_minimal(coop_model, processor, device)
+    # # Quick smoke test to ensure forward works with the learnable prompt
+    # print("\nRunning smoke test forward (synthetic data)...")
+    # smoke_test_forward_minimal(coop_model, processor, device)
 
     # Train on Dataset A (one epoch by default for a light run)
     print("\nTraining on Dataset A...")
