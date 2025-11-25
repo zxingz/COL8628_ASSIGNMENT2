@@ -1,40 +1,44 @@
 {
-  "dataset_pair": "B-C",
-  "checkpoint_path": "C:\\Users\\vishn\\Desktop\\COL-8628\\models\\fm_coop_model_B-C.pth",
-  "timestamp": "2025-11-25T21:27:02.857583Z",
-  "best_map": 0.0,
+  "timestamp": "2025-11-25T21:40:57.578802Z",
   "hyperparameters": {
-    "epochs": 1,
-    "learning_rate": 0.001,
-    "batch_size": 2,
-    "unlabeled_batch_size": 4,
-    "context_length": 16,
-    "lambda_u": 1.0,
-    "threshold": 0.7,
-    "eval_threshold": 0.3,
-    "ema_decay": 0.999,
-    "b_labeled_fraction": 0.1,
+    "epochs": 50,
+    "learning_rate": 1e-05,
+    "batch_size": 4,
+    "context_length": 77,
+    "meta_hidden_dim": 512,
     "device": "cuda",
-    "seed": 10
+    "seed": 12
   },
   "history": [
     {
       "epoch": 1,
-      "average_supervised_loss": 122642.2265625,
-      "average_unsupervised_loss": 0.0,
-      "average_total_loss": 122642.2265625,
-      "validation_average_loss": null,
-      "num_batches": 1,
-      "batch_metrics": [
-        {
-          "step": 1,
-          "supervised_loss": 122642.2265625,
-          "unsupervised_loss": 0.0,
-          "total_loss": 122642.2265625,
-          "validation_loss": null
-        }
-      ],
-      "eval_map": 0.0
+      "average_loss": 2.2022,
+      "validation_average_loss": null
+    },
+    {
+      "epoch": 20,
+      "average_loss": 1.5054,
+      "validation_average_loss": 1.8624
+    },
+    {
+      "epoch": 30,
+      "average_loss": 1.2312,
+      "validation_average_loss": 1.6824
+    },
+    {
+      "epoch": 40,
+      "average_loss": 1.0078,
+      "validation_average_loss": 1.5299
+    },
+    {
+      "epoch": 45,
+      "average_loss": 0.9037,
+      "validation_average_loss": null
+    },
+    {
+      "epoch": 50,
+      "average_loss": 0.8267,
+      "validation_average_loss": 1.9628
     }
   ]
 }
