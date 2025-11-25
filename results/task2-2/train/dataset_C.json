@@ -1,0 +1,32 @@
+[
+  {
+    "epoch": 1,
+    "average_loss": 2.5088,
+    "validation_average_loss": null
+  },
+  {
+    "epoch": 10,
+    "average_loss": 2.1121,
+    "validation_average_loss": 2.2178
+  },
+  {
+    "epoch": 20,
+    "average_loss": 1.6967,
+    "validation_average_loss": 1.7663
+  },
+  {
+    "epoch": 30,
+    "average_loss": 1.3418,
+    "validation_average_loss": 1.5032
+  },
+  {
+    "epoch": 40,
+    "average_loss": 0.9996,
+    "validation_average_loss": 1.4871
+  },
+  {
+    "epoch": 50,
+    "average_loss": 0.8175,
+    "validation_average_loss": 1.8385
+  }
+]

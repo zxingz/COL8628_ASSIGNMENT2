@@ -5,10 +5,12 @@ Task 2.1: CoOp Training Script
 This script trains CoOp (Context Optimization) prompts on labeled datasets.
 
 Usage:
-    python train_task2_1.py --train_path <path> --save_path <path> [--epochs <num>] [--lr <rate>]
+    python train_task2_1.py [--dataset {A,B,C}] [--epochs <num>] [--lr <rate>]
+                            [--batch_size <n>] [--context_length <tokens>]
+                            [--device {cuda,cpu}] [--save_path <file>] [--load_path <file>]
 
 Example:
-    python train_task2_1.py --train_path data/train.json --save_path models/coop_model.pth --epochs 50 --lr 0.002
+    python train_task2_1.py --epochs 10 --lr 5e-4 --batch_size 4 --save_path models/coop_model.pth
 """
 
 import argparse
@@ -17,6 +19,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional, Union
+from datetime import datetime
 
 sys.path.insert(0, os.path.join(str(Path(__file__).resolve().parent.parent.parent)))
 from utils.data_utils import DataSet
@@ -34,6 +37,12 @@ from transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAtte
 from transformers.utils.auto_docstring import auto_docstring
 from transformers.models.bert.modeling_bert import Cache
 from transformers.modeling_attn_mask_utils import _prepare_4d_attention_mask_for_sdpa, _prepare_4d_causal_attention_mask_for_sdpa
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DEFAULT_MODELS_DIR = PROJECT_ROOT / "models"
+DEFAULT_SAVE_PATH = DEFAULT_MODELS_DIR / "coop_model.pth"
+DEFAULT_RESULTS_DIR = PROJECT_ROOT / "results" / "task2-1" / "train"
 
 class BertModel(BertPreTrainedModel):
     _no_split_modules = ["BertEmbeddings", "BertLayer"]
@@ -427,36 +436,31 @@ def smoke_test_forward_minimal(model, processor, device):
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Train CoOp prompts on labeled datasets')
-    
-    # parser.add_argument('--train_path', type=str, required=True,
-    #                     help='Path to the training dataset')
-    # parser.add_argument('--save_path', type=str, required=True,
-    #                     help='Path to save the trained model')
-    # parser.add_argument('--epochs', type=int, default=50,
-    #                     help='Number of training epochs')
-    # parser.add_argument('--lr', type=float, default=0.002,
-    #                     help='Learning rate')
-    # parser.add_argument('--batch_size', type=int, default=32,
-    #                     help='Batch size for training')
-    # parser.add_argument('--context_length', type=int, default=16,
-    #                     help='Length of context vectors')
-    # parser.add_argument('--device', type=str, default='cuda',
-    #                     help='Device to use for computation (cuda/cpu)')
-    # parser.add_argument('--seed', type=int, default=42,
-    #                     help='Random seed for reproducibility')
-    
+    parser.add_argument('--dataset', type=str, choices=['A', 'B', 'C'], default='A',
+                        help='Dataset identifier to train on (default: A)')
+    parser.add_argument('--epochs', type=int, default=1,
+                        help='Number of training epochs (default: 1)')
+    parser.add_argument('--lr', type=float, default=0.001,
+                        help='Learning rate for AdamW optimizer (default: 1e-3)')
+    parser.add_argument('--batch_size', type=int, default=2,
+                        help='Batch size for prompt optimization (default: 2)')
+    parser.add_argument('--context_length', type=int, default=16,
+                        help='Number of learnable prompt tokens (default: 16)')
+    parser.add_argument('--device', type=str, choices=['cuda', 'cpu'], default='cuda',
+                        help='Device to use for computation (default: cuda)')
+    parser.add_argument('--seed', type=int, default=10,
+                        help='Random seed for reproducibility (default: 10)')
+    parser.add_argument('--save_path', type=str, default=str(DEFAULT_SAVE_PATH),
+                        help='Path to persist trained prompt weights (default: models/coop_model.pth)')
+    parser.add_argument('--load_path', type=str, default=None,
+                        help='Optional path to existing prompt weights to warm-start training')
+
     return parser.parse_args()
 
 def load_training_data(train_path):
     """Load training dataset from the specified path."""
     # TODO: Implement data loading logic
     print(f"Loading training data from: {train_path}")
-    pass
-
-def initialize_coop_model(args):
-    """Initialize CoOp model with learnable context vectors."""
-    # TODO: Implement CoOp model initialization
-    print("Initializing CoOp model...")
     pass
 
 def train_model(model, processor, train_data, args):
@@ -468,40 +472,61 @@ def train_model(model, processor, train_data, args):
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
 
     model.train()
+    epoch_history = []
+
+    val_split_target = 0
+    if args.batch_size > 10:
+        val_split_target = max(1, int(args.batch_size * 0.1))
+
+    def forward_batch(batch_prompts, batch_boxes, batch_images):
+        if not batch_prompts:
+            return None
+
+        labels = []
+        for boxes in batch_boxes:
+            if len(boxes) > 0:
+                labels.append({
+                    "class_labels": torch.zeros(len(boxes), dtype=torch.long, device=device),
+                    "boxes": torch.tensor(boxes, dtype=torch.float, device=device),
+                })
+            else:
+                labels.append({
+                    "class_labels": torch.tensor([], dtype=torch.long, device=device),
+                    "boxes": torch.tensor([], dtype=torch.float, device=device).reshape(-1, 4),
+                })
+
+        inputs = processor(images=batch_images, text=batch_prompts, return_tensors="pt")
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        return model(**inputs, labels=labels, return_dict=True).loss
 
     for epoch in range(args.epochs):
         total_loss = 0
         num_batches = 0
+        batch_losses = []
+        val_losses = []
         
-        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=2)
+        batch_generator = get_batches(train_data, default_prompt="malignant", batch_size=args.batch_size)
 
         for batch_prompts, batch_class_labels, batch_boxes, batch_pil_images in batch_generator:
             optimizer.zero_grad()
-            
-            # Prepare labels in the format expected by the model
-            labels = []
-            for boxes, class_labels in zip(batch_boxes, batch_class_labels):
-                # The model expects normalized [center_x, center_y, width, height]
-                # For now, we assume boxes are for the first class (index 0)
-                # and that there are no boxes for benign cases.
-                if len(boxes) > 0:
-                    labels.append({
-                        "class_labels": torch.zeros(len(boxes), dtype=torch.long, device=device),
-                        "boxes": torch.tensor(boxes, dtype=torch.float, device=device)
-                    })
-                else:  # Benign cases
-                    labels.append({
-                        "class_labels": torch.tensor([], dtype=torch.long, device=device),
-                        "boxes": torch.tensor([], dtype=torch.float, device=device).reshape(-1, 4)
-                    })
 
-            # Process inputs
-            inputs = processor(images=batch_pil_images, text=batch_prompts, return_tensors="pt")
-            inputs = {k: v.to(device) for k, v in inputs.items()}
+            val_size = 0
+            if val_split_target > 0 and len(batch_prompts) > val_split_target:
+                val_size = val_split_target
 
-            # Forward pass
-            outputs = model(**inputs, labels=labels, return_dict=True)
-            loss = outputs.loss
+            train_end = len(batch_prompts) - val_size
+            train_prompts = batch_prompts[:train_end]
+            train_boxes = batch_boxes[:train_end]
+            train_images = batch_pil_images[:train_end]
+            val_prompts = batch_prompts[train_end:]
+            val_boxes = batch_boxes[train_end:]
+            val_images = batch_pil_images[train_end:]
+
+            # Forward pass on training subset
+            loss = forward_batch(train_prompts, train_boxes, train_images)
+            if loss is None:
+                continue
             
             # Backward pass and optimization
             loss.backward()
@@ -509,22 +534,100 @@ def train_model(model, processor, train_data, args):
 
             total_loss += loss.item()
             num_batches += 1
+            batch_losses.append(loss.item())
             print(f"Epoch {epoch+1}, Batch {num_batches}, Loss: {loss.item():.4f}")
 
+            # Validation forward pass (no grad)
+            if val_size > 0:
+                with torch.no_grad():
+                    val_loss = forward_batch(val_prompts, val_boxes, val_images)
+                if val_loss is not None:
+                    val_losses.append(val_loss.item())
+                    print(f"Epoch {epoch+1}, Batch {num_batches}, Validation Loss: {val_loss.item():.4f}")
+
         avg_loss = total_loss / num_batches
-        print(f"Epoch {epoch+1}/{args.epochs}, Average Loss: {avg_loss:.4f}")
+        avg_val_loss = sum(val_losses) / len(val_losses) if val_losses else None
+        if avg_val_loss is not None:
+            print(f"Epoch {epoch+1}/{args.epochs}, Average Loss: {avg_loss:.4f}, Validation Loss: {avg_val_loss:.4f}")
+        else:
+            print(f"Epoch {epoch+1}/{args.epochs}, Average Loss: {avg_loss:.4f}")
+        epoch_history.append({
+            "epoch": epoch + 1,
+            "average_loss": avg_loss,
+            "num_batches": num_batches,
+            "batch_losses": batch_losses,
+            "validation_average_loss": avg_val_loss,
+            "validation_batch_losses": val_losses,
+        })
 
     print("Training completed!")
+    return epoch_history
 
 def save_model(model, save_path):
-    """Save the trained model."""
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    
-    # TODO: Implement model saving
-    # We only need to save the learnable prompt
-    print(f"Saving model to: {save_path}")
-    state_dict = {k: v for k, v in model.state_dict().items() if 'prompt' in k}
-    torch.save(state_dict, save_path)
+    """Persist the trainable prompt parameters to disk."""
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+
+    prompt_state = {k: v.detach().cpu() for k, v in model.state_dict().items() if 'prompt' in k}
+    torch.save(prompt_state, save_path)
+    print(f"Saved prompt weights to: {save_path}")
+
+def load_prompt_weights(model, load_path, device):
+    """Load previously trained prompt weights if available."""
+    if load_path is None:
+        return
+
+    load_path = Path(load_path)
+    if not load_path.exists():
+        print(f"Load path {load_path} does not exist; skipping warm start.")
+        return
+
+    state = torch.load(load_path, map_location=device)
+    filtered_state = {k: v for k, v in state.items() if 'prompt' in k}
+    if not filtered_state:
+        print(f"No prompt weights found in {load_path}; skipping warm start.")
+        return
+
+    load_result = model.load_state_dict(filtered_state, strict=False)
+    loaded_keys = list(filtered_state.keys())
+    print(f"Loaded prompt weights from {load_path} ({len(loaded_keys)} tensors).")
+    if load_result.unexpected_keys:
+        print(f"Warning: Unexpected keys when loading prompts: {load_result.unexpected_keys}")
+
+def resolve_device(device_pref: str) -> torch.device:
+    """Return the torch.device requested, falling back to CPU if CUDA unavailable."""
+    device_pref = device_pref.lower()
+    if device_pref == 'cuda':
+        if torch.cuda.is_available():
+            return torch.device('cuda')
+        print("CUDA requested but not available. Falling back to CPU.")
+        return torch.device('cpu')
+    return torch.device('cpu')
+
+def save_training_summary(dataset_name: str, checkpoint_path: Path, history, args, device: torch.device):
+    """Write training metadata and losses to results/task2-1/train/dataset_<DATASET>.json."""
+    results_dir = DEFAULT_RESULTS_DIR
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    summary = {
+        "dataset": dataset_name,
+        "checkpoint_path": str(checkpoint_path),
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "hyperparameters": {
+            "epochs": args.epochs,
+            "learning_rate": args.lr,
+            "batch_size": args.batch_size,
+            "context_length": args.context_length,
+            "device": str(device),
+            "seed": args.seed,
+        },
+        "history": history,
+    }
+
+    summary_path = results_dir / f"dataset_{dataset_name}.json"
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print(f"Saved training summary to: {summary_path}")
 
 def main():
     """Main execution function."""
@@ -533,59 +636,43 @@ def main():
     print("=" * 50)
     print("Task 2.1: CoOp Training")
     print("=" * 50)
-    # print(f"Training dataset: {args.train_path}")
-    # print(f"Save path: {args.save_path}")
-    # print(f"Epochs: {args.epochs}")
-    # print(f"Learning rate: {args.lr}")
-    # print(f"Batch size: {args.batch_size}")
-    # print(f"Context length: {args.context_length}")
 
-    # For demonstration, using hardcoded args
-    from argparse import Namespace
-    # Keep defaults small for quick iteration; adjust as needed
-    args = Namespace(epochs=1, lr=0.001, batch_size=2, context_length=16)
-    
     # Set random seed
-    torch.manual_seed(10)
+    torch.manual_seed(args.seed)
     
-    # Setup device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # device = torch.device('cpu')
+    # Setup device (fallback to CPU if CUDA unavailable)
+    device = resolve_device(args.device)
     print(f"Using device: {device}")
     
     # Paths
-    data_path = os.path.join(str(Path(__file__).resolve().parent.parent.parent), "data")
-    results_path = os.path.join(str(Path(__file__).resolve().parent.parent.parent), "results", "task2-1")
-    save_path = os.path.join(str(Path(__file__).resolve().parent.parent.parent), "models", "coop_model.pth")
+    data_path = PROJECT_ROOT / "data"
+    save_path = Path(args.save_path)
+    dataset_name = args.dataset
 
     # Load model and processor
     base_model, processor = load_model(device)
     
-    # Dataset A
-    train_A = DataSet(data_path=data_path, name="A", label="train")
-    # test_A = DataSet(data_path=data_path, name="A", label="test")
-    
-    # # Dataset B
-    # train_B = DataSet(data_path=data_path, name="B", label="train")
-    # test_B = DataSet(data_path=data_path, name="B", label="test")
-    
-    # # Dataset C
-    # train_C = DataSet(data_path=data_path, name="C", label="train")
-    # test_C = DataSet(data_path=data_path, name="C", label="test")
+    # Selected dataset
+    train_dataset = DataSet(data_path=data_path, name=dataset_name, label="train")
     
     # Initialize CoOp model
     coop_model = GDinoCoop(base_model, prompt_length=args.context_length).to(device)
+
+    # Optionally warm-start from saved prompt weights
+    load_prompt_weights(coop_model, args.load_path, device)
 
     # # Quick smoke test to ensure forward works with the learnable prompt
     # print("\nRunning smoke test forward (synthetic data)...")
     # smoke_test_forward_minimal(coop_model, processor, device)
 
-    # Train on Dataset A (one epoch by default for a light run)
-    print("\nTraining on Dataset A...")
-    train_model(coop_model, processor, train_A, args)
+    # Train on requested dataset
+    print(f"\nTraining on Dataset {dataset_name}...")
+    history = train_model(coop_model, processor, train_dataset, args)
     
     # Save the trained prompt
-    save_model(coop_model, save_path)
+    checkpoint_path = save_path.with_name(f"{save_path.stem}_{dataset_name}{save_path.suffix}")
+    save_model(coop_model, checkpoint_path)
+    save_training_summary(dataset_name, checkpoint_path, history, args, device)
 
 if __name__ == "__main__":
     main()

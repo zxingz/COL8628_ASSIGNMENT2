@@ -1,0 +1,22 @@
+[
+  {
+    "epoch": 1,
+    "average_loss": 4.5284,
+    "validation_average_loss": null
+  },
+  {
+    "epoch": 10,
+    "average_loss": 1.8771,
+    "validation_average_loss": 2.4022
+  },
+  {
+    "epoch": 20,
+    "average_loss": 0.7194,
+    "validation_average_loss": 2.3928
+  },
+  {
+    "epoch": 30,
+    "average_loss": 0.2098,
+    "validation_average_loss": 2.0676
+  }
+]

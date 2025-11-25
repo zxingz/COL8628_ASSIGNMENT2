@@ -1,0 +1,36 @@
+{
+  "model": "Grounding DINO COOP",
+  "metric": "Loss",
+  "data_points": [
+    {
+      "epoch": 1,
+      "train_loss": 4.0472,
+      "validation_loss": 4.1241
+    },
+    {
+      "epoch": 10,
+      "train_loss": 1.6169,
+      "validation_loss": 1.9743
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.6459,
+      "validation_loss": 0.8887
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.2678,
+      "validation_loss": 1.3898
+    },
+    {
+      "epoch": 40,
+      "train_loss": 0.0876,
+      "validation_loss": 4.1941
+    },
+    {
+      "epoch": 50,
+      "train_loss": 0.027,
+      "validation_loss": 9.1035
+    }
+  ]
+}
