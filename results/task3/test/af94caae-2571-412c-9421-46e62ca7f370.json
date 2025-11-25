@@ -1,0 +1,460 @@
+{
+  "dataset": "B",
+  "ground_truth": {
+    "05da4a6b185571791bbdc7206d1a5483.jpg": [],
+    "0d0826dc6e633a7729ea56fa7390c508.jpg": [
+      [
+        145.28500366211,
+        1596.6899414062,
+        336.09201049805,
+        1824.0
+      ]
+    ],
+    "0e089caa76a28e15aa6dd307721540da.jpg": [],
+    "0f28a08ac93c67606f55ec62e65a5f3c.jpg": [],
+    "101906844b5a3d7fab9df630876d24fd.jpg": [
+      [
+        1082.8399658203,
+        1897.5600585938,
+        1343.9300537109,
+        2317.3500976562
+      ]
+    ],
+    "10e3136f3e11277d87ce71d123f7ba68.jpg": [
+      [
+        2053.4799804688,
+        1367.9300537109,
+        2298.8500976562,
+        1632.1800537109
+      ]
+    ],
+    "180c146145a11ad16abf5baacdda0a32.jpg": [],
+    "1d4bf382af533e8a00fbb63e7ee9e907.jpg": [],
+    "1e608a0b812bbed0b6364003a4b0f3e1.jpg": [],
+    "1fa586cd078894845bf4a1648232cde7.jpg": [
+      [
+        64.585800170898,
+        451.34298706055,
+        249.32299804688,
+        608.50799560547
+      ]
+    ],
+    "1fcfb6829f889cbc3e0a363fbc46a4dc.jpg": [],
+    "23557ee5f0ec2f6fc3551be8846d9eb5.jpg": [],
+    "2569bc2f2c90a162d78f7d85ce53be70.jpg": [],
+    "2d0dc19dfbae248161beb975554983bc.jpg": [],
+    "2e9f920358d36a89d4a15208fce16bdb.jpg": [],
+    "3067b317b88697b45e336a9e1a481021.jpg": [
+      [
+        2456.860735009672,
+        1515.739845261122,
+        2635.448742746615,
+        1898.428433268859
+      ]
+    ],
+    "363ca8a34a7b54d334cc02d1c12c1585.jpg": [
+      [
+        2666.0300292969,
+        378.89999389648,
+        2782.919921875,
+        539.44201660156
+      ]
+    ],
+    "3ec86e562dff55015cf5cc926dd64220.jpg": [],
+    "441e0fec8bac5f4dfcc2bcac5f210195.jpg": [],
+    "45d47e49fa6abaff60377a9a36e027bc.jpg": [],
+    "467007b4368c744c17226216a5b58f4e.jpg": [],
+    "472535aeda018065e14b22397837e36e.jpg": [],
+    "48c5149c467f42e75d5310a22ac6529f.jpg": [],
+    "4a60c9d923795e3162879b0c84a2a1b9.jpg": [
+      [
+        214.99000549316,
+        1705.8299560547,
+        385.13598632812,
+        1857.6500244141
+      ]
+    ],
+    "4ad937e56f0b8b6bd163b51eea539a60.jpg": [],
+    "4c8432c99142aa08dc838ee39dde7a93.jpg": [],
+    "4cc2b68998e43d395389643a21ec0cb3.jpg": [],
+    "5388dce47a6c90709bc174582ae92b97.jpg": [],
+    "5616df46d2800ce75484fd5dca070382.jpg": [],
+    "5c0e398148f00acdc82c870a9751fcb0.jpg": [],
+    "65c52e6e9387f1c698ffaf213594b5c1.jpg": [],
+    "68485c632936e965249b2aee946aec2d.jpg": [
+      [
+        2731.4099121094,
+        1989.0500488281,
+        2797.8400878906,
+        2065.9699707031
+      ]
+    ],
+    "71a855e6de5407bf637d038553336147.jpg": [],
+    "7e6a45cafec710d14af05ceaefdca6e6.jpg": [],
+    "862e22b040bf23946e96da765f9871c1.jpg": [
+      [
+        1283.8299560547,
+        1862.0799560547,
+        1667.7399902344,
+        2315.1398925781
+      ]
+    ],
+    "86acd387d6dcbe2257fb009ecd8b1ada.jpg": [],
+    "9076323f4b661b4b57a9229b869c62c7.jpg": [
+      [
+        207.1490020752,
+        1346.2900390625,
+        512.32098388672,
+        1618.9100341797
+      ]
+    ],
+    "914efd6408f5f3f7cb95f54d424eddd7.jpg": [],
+    "93835b3e376f57cd53d84a9f5985d00d.jpg": [],
+    "9b13464214ae05c7d7e4881d5571ba03.jpg": [],
+    "a9f8f1eedffe62b7e5d5e871d5f10ea4.jpg": [],
+    "abf3b16aa427797e44bd708d6b094bf1.jpg": [],
+    "acf41439db82d0dae309307a16251e4f.jpg": [],
+    "af397a656d521c360ea78df1fc8527e9.jpg": [],
+    "b50e0e1100d4f3fb389534cee03a2b03.jpg": [
+      [
+        2368.9699707031,
+        312.07000732422,
+        2552.8701171875,
+        510.48098754882994
+      ]
+    ],
+    "b782203ed69e33c6589b504c1bef50ee.jpg": [
+      [
+        2047.6500244141,
+        972.25799560547,
+        2610.6298828125,
+        1607.9200439453
+      ]
+    ],
+    "c07b5d9d6e2d0449dde2b34a432fc3b3.jpg": [
+      [
+        2328.4200701079044,
+        2429.740759989839,
+        2507.6394779650136,
+        2619.2601338157474
+      ]
+    ],
+    "c2b45125b9e1a9fbd0890552edb58801.jpg": [],
+    "ca29f9b290c2613c2d0ae9ccfc8fe722.jpg": [
+      [
+        1595.3499755859,
+        1681.7900390625,
+        1710.8000488281,
+        2211.2299804688
+      ]
+    ],
+    "cb6a9b188901403ee99fd1a28ab223e3.jpg": [],
+    "cef78bc38a146cacf45b3538abc4b7e1.jpg": [
+      [
+        9.1219396591187,
+        1419.5500488281,
+        598.23199462891,
+        1730.3699951172
+      ]
+    ],
+    "db769a6542dbd47457abdb021636f857.jpg": [],
+    "dcc9be86f19de7a84eeb9b10682b4cb6.jpg": [],
+    "dd33c02bfdbe7311bf87e2955281c01d.jpg": [],
+    "df17a9f399b214cb863d754e376f8673.jpg": [
+      [
+        467.92001342773,
+        1936.6099853516,
+        681.05499267578,
+        2123.4899902344
+      ]
+    ],
+    "df542a4ef123877ab12bf956ce10c9c5.jpg": [],
+    "e0157a5aa6abf99cd520e7591a21843d.jpg": [],
+    "e38002fcb59bdbe4d065eb2659026d35.jpg": [
+      [
+        222.51699829102,
+        893.65802001953,
+        692.27398681641,
+        1347.9599609375
+      ]
+    ],
+    "e751e5a947089704457741eea74c2280.jpg": [
+      [
+        2374.669921875,
+        259.16198730469,
+        2629.669921875,
+        657.31597900391
+      ]
+    ],
+    "fe93d1808f2ee14ec3f90ddb596d6454.jpg": [],
+    "ff1006f34fb13f42dff90aff81dc33ce.jpg": [
+      [
+        30.920999526978,
+        1389.9899902344,
+        125.41500091553,
+        1470.1700439453
+      ]
+    ],
+    "ffac8bc2803630da2fb467c566d1f136.jpg": [
+      [
+        2205.3601074219,
+        1129.0999755859,
+        2810.1298828125,
+        1612.6099853516
+      ]
+    ]
+  },
+  "prediction_B": {
+    "db769a6542dbd47457abdb021636f857.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "ffac8bc2803630da2fb467c566d1f136.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "441e0fec8bac5f4dfcc2bcac5f210195.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "5616df46d2800ce75484fd5dca070382.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "4a60c9d923795e3162879b0c84a2a1b9.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "914efd6408f5f3f7cb95f54d424eddd7.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "cb6a9b188901403ee99fd1a28ab223e3.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "3067b317b88697b45e336a9e1a481021.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "df17a9f399b214cb863d754e376f8673.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "48c5149c467f42e75d5310a22ac6529f.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "3ec86e562dff55015cf5cc926dd64220.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "862e22b040bf23946e96da765f9871c1.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "05da4a6b185571791bbdc7206d1a5483.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "1fa586cd078894845bf4a1648232cde7.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "ff1006f34fb13f42dff90aff81dc33ce.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "acf41439db82d0dae309307a16251e4f.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "c07b5d9d6e2d0449dde2b34a432fc3b3.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "df542a4ef123877ab12bf956ce10c9c5.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "4c8432c99142aa08dc838ee39dde7a93.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "9b13464214ae05c7d7e4881d5571ba03.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "1fcfb6829f889cbc3e0a363fbc46a4dc.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "e751e5a947089704457741eea74c2280.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "71a855e6de5407bf637d038553336147.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "5c0e398148f00acdc82c870a9751fcb0.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "cef78bc38a146cacf45b3538abc4b7e1.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "7e6a45cafec710d14af05ceaefdca6e6.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "b50e0e1100d4f3fb389534cee03a2b03.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "0d0826dc6e633a7729ea56fa7390c508.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "af397a656d521c360ea78df1fc8527e9.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "101906844b5a3d7fab9df630876d24fd.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "363ca8a34a7b54d334cc02d1c12c1585.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "1e608a0b812bbed0b6364003a4b0f3e1.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "dd33c02bfdbe7311bf87e2955281c01d.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "e0157a5aa6abf99cd520e7591a21843d.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "10e3136f3e11277d87ce71d123f7ba68.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "2e9f920358d36a89d4a15208fce16bdb.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "dcc9be86f19de7a84eeb9b10682b4cb6.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "fe93d1808f2ee14ec3f90ddb596d6454.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "93835b3e376f57cd53d84a9f5985d00d.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "0e089caa76a28e15aa6dd307721540da.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "467007b4368c744c17226216a5b58f4e.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "4ad937e56f0b8b6bd163b51eea539a60.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "b782203ed69e33c6589b504c1bef50ee.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "2d0dc19dfbae248161beb975554983bc.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "9076323f4b661b4b57a9229b869c62c7.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "c2b45125b9e1a9fbd0890552edb58801.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "180c146145a11ad16abf5baacdda0a32.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "abf3b16aa427797e44bd708d6b094bf1.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "2569bc2f2c90a162d78f7d85ce53be70.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "ca29f9b290c2613c2d0ae9ccfc8fe722.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "e38002fcb59bdbe4d065eb2659026d35.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "a9f8f1eedffe62b7e5d5e871d5f10ea4.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "4cc2b68998e43d395389643a21ec0cb3.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "68485c632936e965249b2aee946aec2d.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "1d4bf382af533e8a00fbb63e7ee9e907.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "45d47e49fa6abaff60377a9a36e027bc.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "65c52e6e9387f1c698ffaf213594b5c1.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "472535aeda018065e14b22397837e36e.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "5388dce47a6c90709bc174582ae92b97.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "86acd387d6dcbe2257fb009ecd8b1ada.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "23557ee5f0ec2f6fc3551be8846d9eb5.jpg": {
+      "boxes": [],
+      "scores": []
+    },
+    "0f28a08ac93c67606f55ec62e65a5f3c.jpg": {
+      "boxes": [],
+      "scores": []
+    }
+  },
+  "prompt": "A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",
+  "box_threshold": 0.7,
+  "text_threshold": 0.7
+}

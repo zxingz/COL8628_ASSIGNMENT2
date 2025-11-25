@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
-"""
-Task 3: Semi-Supervised CoOp Training Script
-
-This script adapts FixMatch for prompt tuning with Grounding DINO. Only the textual prompt
-embeddings are optimized, while the vision backbone remains frozen. You can train on dataset
-pairs (A-B, B-C, A-C) by selecting which dataset supplies the primary labeled pool and which
-provides the partially labeled + unlabeled splits.
-
-Usage:
-    python train_task3.py --dataset_pair A-B [--epochs <num>] [--lr <rate>]
-                          [--batch_size <n>] [--context_length <tokens>]
-                          [--device {cuda,cpu}] [--save_path <file>] [--load_path <file>]
-
-Example:
-    python train_task3.py --dataset_pair B-C --epochs 15 --lr 5e-4 --batch_size 8 \
-                          --save_path models/fm_coop_model.pth
-"""
+"""Task 3: Semi-Supervised CoOp (FixMatch) Training Script."""
 
 from __future__ import annotations
 
@@ -28,7 +12,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import pandas as pd
 import torch
@@ -60,19 +44,28 @@ from transformers.utils.auto_docstring import auto_docstring
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_MODELS_DIR = PROJECT_ROOT / "models"
-DEFAULT_SAVE_PATH = DEFAULT_MODELS_DIR / "fm_coop_model.pth"
 DEFAULT_RESULTS_DIR = PROJECT_ROOT / "results" / "task3" / "train"
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "data"
+DEFAULT_MODEL_PATH = DEFAULT_MODELS_DIR / "grounding_dino_tiny.pth"
+DEFAULT_SAVE_PATH = DEFAULT_MODELS_DIR / "fm_coop_model.pth"
 SUPPORTED_DATASET_PAIRS = ("A-B", "B-C", "A-C")
-
-PAIR_DEFAULT_MODEL_PATHS = {
-    pair: DEFAULT_MODELS_DIR / f"fm_coop_model_{pair}.pth"
-    for pair in SUPPORTED_DATASET_PAIRS
-}
-
-# Single-class detection prompt; benign cases simply contribute no boxes.
 PROMPT_TEXT = "a mammogram containing a malignant mass"
-PROMPT_TOKEN_CLASS = 0
+PROMPT_CLASS_ID = 0
+
+
+@dataclass
+class LabeledRecord:
+    image: Image.Image
+    target: Dict[str, torch.Tensor]
+    gt_boxes_xyxy: torch.Tensor
+    size: Tuple[int, int]
+
+
+@dataclass
+class UnlabeledRecord:
+    weak_image: Image.Image
+    strong_image: Image.Image
+    size: Tuple[int, int]
 
 
 def set_seed(seed: int) -> None:
@@ -82,13 +75,11 @@ def set_seed(seed: int) -> None:
 
 
 def resolve_device(device_pref: str) -> torch.device:
-    """Return requested device, falling back to CPU if CUDA unavailable."""
     device_pref = device_pref.lower()
+    if device_pref == "cuda" and torch.cuda.is_available():
+        return torch.device("cuda")
     if device_pref == "cuda":
-        if torch.cuda.is_available():
-            return torch.device("cuda")
         print("CUDA requested but not available. Falling back to CPU.")
-        return torch.device("cpu")
     return torch.device("cpu")
 
 
@@ -109,6 +100,12 @@ def split_labeled_unlabeled(df: pd.DataFrame, labeled_fraction: float, seed: int
     return labeled_df.reset_index(drop=True), unlabeled_df.reset_index(drop=True)
 
 
+def apply_transform(image: Image.Image, transform: Optional[transforms.Compose]) -> Image.Image:
+    if transform is None:
+        return image
+    return transform(image.copy())
+
+
 def build_weak_augmentation() -> transforms.Compose:
     return transforms.Compose(
         [
@@ -123,16 +120,10 @@ def build_strong_augmentation() -> transforms.Compose:
         [
             transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1),
             transforms.RandomGrayscale(p=0.2),
-            transforms.RandomAdjustSharpness(sharpness_factor=2.0, p=0.3),
+            transforms.RandomAdjustSharpness(2.0, p=0.3),
             transforms.GaussianBlur(kernel_size=5, sigma=(0.5, 1.5)),
         ]
     )
-
-
-def apply_transform(image: Image.Image, transform: Optional[transforms.Compose]) -> Image.Image:
-    if transform is None:
-        return image
-    return transform(image.copy())
 
 
 def xyxy_to_cxcywh(box: Sequence[float], width: float, height: float) -> List[float]:
@@ -153,16 +144,7 @@ def cxcywh_to_xyxy(boxes: torch.Tensor) -> torch.Tensor:
     return torch.stack((x0, y0, x1, y1), dim=-1)
 
 
-@dataclass
-class LabeledSample:
-    image: Image.Image
-    target: Dict[str, torch.Tensor]
-    gt_boxes_xyxy: torch.Tensor
-    gt_labels: torch.Tensor
-    size: Tuple[int, int]
-
-
-class MammoLabeledDataset(Dataset[LabeledSample]):
+class MammoLabeledDataset(Dataset[LabeledRecord]):
     def __init__(
         self,
         frame: pd.DataFrame,
@@ -178,7 +160,7 @@ class MammoLabeledDataset(Dataset[LabeledSample]):
     def __len__(self) -> int:
         return len(self.frame)
 
-    def __getitem__(self, idx: int) -> LabeledSample:
+    def __getitem__(self, idx: int) -> LabeledRecord:
         row = self.frame.iloc[idx]
         image_path = self.root / f"dataset_{row['dataset']}" / self.subset / row["image_name"]
         image = Image.open(image_path).convert("RGB")
@@ -191,7 +173,7 @@ class MammoLabeledDataset(Dataset[LabeledSample]):
         if has_box:
             xyxy_box = [row["xmin"], row["ymin"], row["xmax"], row["ymax"]]
             gt_boxes_xyxy = torch.tensor([xyxy_box], dtype=torch.float32)
-            class_labels = torch.tensor([PROMPT_TOKEN_CLASS], dtype=torch.long)
+            class_labels = torch.tensor([PROMPT_CLASS_ID], dtype=torch.long)
             cxcywh = torch.tensor([xyxy_to_cxcywh(xyxy_box, width, height)], dtype=torch.float32)
         else:
             gt_boxes_xyxy = torch.zeros((0, 4), dtype=torch.float32)
@@ -199,17 +181,10 @@ class MammoLabeledDataset(Dataset[LabeledSample]):
             cxcywh = torch.zeros((0, 4), dtype=torch.float32)
 
         target = {"class_labels": class_labels, "boxes": cxcywh}
-        return LabeledSample(image=image, target=target, gt_boxes_xyxy=gt_boxes_xyxy, gt_labels=class_labels, size=(height, width))
+        return LabeledRecord(image=image, target=target, gt_boxes_xyxy=gt_boxes_xyxy, size=(height, width))
 
 
-@dataclass
-class UnlabeledSample:
-    weak_image: Image.Image
-    strong_image: Image.Image
-    size: Tuple[int, int]
-
-
-class MammoUnlabeledDataset(Dataset[UnlabeledSample]):
+class MammoUnlabeledDataset(Dataset[UnlabeledRecord]):
     def __init__(
         self,
         frame: pd.DataFrame,
@@ -227,7 +202,7 @@ class MammoUnlabeledDataset(Dataset[UnlabeledSample]):
     def __len__(self) -> int:
         return len(self.frame)
 
-    def __getitem__(self, idx: int) -> UnlabeledSample:
+    def __getitem__(self, idx: int) -> UnlabeledRecord:
         row = self.frame.iloc[idx]
         image_path = self.root / f"dataset_{row['dataset']}" / self.subset / row["image_name"]
         image = Image.open(image_path).convert("RGB")
@@ -235,22 +210,18 @@ class MammoUnlabeledDataset(Dataset[UnlabeledSample]):
 
         weak_image = apply_transform(image, self.weak_transform)
         strong_image = apply_transform(image, self.strong_transform)
-        return UnlabeledSample(weak_image=weak_image, strong_image=strong_image, size=(height, width))
+        return UnlabeledRecord(weak_image=weak_image, strong_image=strong_image, size=(height, width))
 
 
-def collate_labeled(batch: Sequence[LabeledSample]):
+def collate_labeled(batch: Sequence[LabeledRecord]):
     images = [item.image for item in batch]
-    targets = []
-    gt_info = []
-    sizes = []
-    for item in batch:
-        targets.append(item.target)
-        gt_info.append({"boxes": item.gt_boxes_xyxy, "labels": item.gt_labels})
-        sizes.append(item.size)
+    targets = [item.target for item in batch]
+    sizes = [item.size for item in batch]
+    gt_info = [item.gt_boxes_xyxy for item in batch]
     return images, targets, gt_info, sizes
 
 
-def collate_unlabeled(batch: Sequence[UnlabeledSample]):
+def collate_unlabeled(batch: Sequence[UnlabeledRecord]):
     weak_images = [item.weak_image for item in batch]
     strong_images = [item.strong_image for item in batch]
     sizes = [item.size for item in batch]
@@ -260,7 +231,7 @@ def collate_unlabeled(batch: Sequence[UnlabeledSample]):
 class BertModel(BertPreTrainedModel):
     _no_split_modules = ["BertEmbeddings", "BertLayer"]
 
-    def __init__(self, config, add_pooling_layer: bool = False):
+    def __init__(self, config, add_pooling_layer=False):
         super().__init__(config)
         self.config = config
 
@@ -305,27 +276,23 @@ class BertModel(BertPreTrainedModel):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
         cache_position: Optional[torch.Tensor] = None,
-    ) -> BaseModelOutputWithPoolingAndCrossAttentions:
-        if output_attentions is None:
-            output_attentions = self.config.output_attentions
-        if output_hidden_states is None:
-            output_hidden_states = self.config.output_hidden_states
-        if return_dict is None:
-            return_dict = self.config.use_return_dict
+    ) -> Union[tuple[torch.Tensor], BaseModelOutputWithPoolingAndCrossAttentions]:
+        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        output_hidden_states = output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         if self.config.is_decoder:
-            use_cache = self.config.use_cache if use_cache is None else use_cache
+            use_cache = use_cache if use_cache is not None else self.config.use_cache
         else:
             use_cache = False
 
         if inputs_embeds is not None:
-            raise ValueError("This BertModel manages its own prompt embeddings; please provide input_ids only.")
+            raise ValueError("This BertModel manages its own prompt embeddings; provide input_ids only.")
         if input_ids is None:
-            raise ValueError("You must provide input_ids for BertModel forward")
+            raise ValueError("input_ids must be supplied")
 
         self.warn_if_padding_and_no_attention_mask(input_ids, attention_mask)
         input_shape = input_ids.size()
-
         batch_size, seq_length = input_shape
         device = input_ids.device
         prompt_len = self.prompt_length
@@ -364,16 +331,16 @@ class BertModel(BertPreTrainedModel):
         prompt_embeddings = self.prompt_embeddings.expand(batch_size, -1, -1)
 
         if self.embeddings.position_embeddings is not None:
-            prompt_position_ids = torch.arange(0, prompt_len, dtype=torch.long, device=device)
-            prompt_position_ids = prompt_position_ids.unsqueeze(0).expand(batch_size, -1)
-            prompt_position_embeddings = self.embeddings.position_embeddings(prompt_position_ids)
+            prompt_pos_ids = torch.arange(0, prompt_len, dtype=torch.long, device=device)
+            prompt_pos_ids = prompt_pos_ids.unsqueeze(0).expand(batch_size, -1)
+            prompt_pos_emb = self.embeddings.position_embeddings(prompt_pos_ids)
         else:
-            prompt_position_embeddings = 0
+            prompt_pos_emb = 0
 
         prompt_token_type_ids = torch.zeros((batch_size, prompt_len), dtype=torch.long, device=device)
-        prompt_token_type_embeddings = self.embeddings.token_type_embeddings(prompt_token_type_ids)
+        prompt_token_type_emb = self.embeddings.token_type_embeddings(prompt_token_type_ids)
 
-        prompt_embeddings = prompt_embeddings + prompt_position_embeddings + prompt_token_type_embeddings
+        prompt_embeddings = prompt_embeddings + prompt_pos_emb + prompt_token_type_emb
         prompt_embeddings = self.embeddings.LayerNorm(prompt_embeddings)
         prompt_embeddings = self.embeddings.dropout(prompt_embeddings)
 
@@ -445,10 +412,40 @@ class BertModel(BertPreTrainedModel):
             return_dict=return_dict,
             cache_position=cache_position,
         )
-
         seq_without_prompt = max(encoder_outputs[0].size(1) - prompt_len, 0)
-        sequence_output = encoder_outputs[0].narrow(1, prompt_len, seq_without_prompt).contiguous()
+        if seq_without_prompt > 0:
+            sequence_output = encoder_outputs[0].narrow(1, prompt_len, seq_without_prompt).contiguous()
+        else:
+            sequence_output = encoder_outputs[0].new_zeros((batch_size, 0, encoder_outputs[0].size(-1)))
+
+        if sequence_output.size(0) != batch_size:
+            raise RuntimeError(
+                f"Unexpected batch dimension after prompt trimming: got {sequence_output.size(0)}, expected {batch_size}."
+            )
+
         pooled_output = self.pooler(sequence_output) if self.pooler is not None else None
+
+        if not return_dict:
+            outputs = (sequence_output, pooled_output)
+            if len(encoder_outputs) > 1:
+                trimmed = []
+                for item in encoder_outputs[1:]:
+                    if isinstance(item, tuple) and len(item) > 0 and item[0] is not None and item[0].dim() == 3:
+                        trimmed_tuple = []
+                        for state in item:
+                            if state is None:
+                                trimmed_tuple.append(None)
+                            else:
+                                if seq_without_prompt > 0:
+                                    trimmed_slice = state.narrow(1, prompt_len, seq_without_prompt).contiguous()
+                                else:
+                                    trimmed_slice = state.new_zeros((batch_size, 0, state.size(-1)))
+                                trimmed_tuple.append(trimmed_slice)
+                        trimmed.append(tuple(trimmed_tuple))
+                    else:
+                        trimmed.append(item)
+                outputs += tuple(trimmed)
+            return outputs
 
         hidden_states = encoder_outputs.hidden_states
         if hidden_states is not None:
@@ -457,7 +454,11 @@ class BertModel(BertPreTrainedModel):
                 if state is None:
                     trimmed_states.append(None)
                 else:
-                    trimmed_states.append(state.narrow(1, prompt_len, seq_without_prompt).contiguous())
+                    if seq_without_prompt > 0:
+                        trimmed_slice = state.narrow(1, prompt_len, seq_without_prompt).contiguous()
+                    else:
+                        trimmed_slice = state.new_zeros((batch_size, 0, state.size(-1)))
+                    trimmed_states.append(trimmed_slice)
             hidden_states = tuple(trimmed_states)
 
         cross_attentions = getattr(encoder_outputs, "cross_attentions", None)
@@ -503,13 +504,12 @@ class GDinoCoop(nn.Module):
 
 
 def prompt_parameters(module: nn.Module) -> Iterable[nn.Parameter]:
-    for name, param in module.named_parameters():
+    for _, param in module.named_parameters():
         if param.requires_grad:
             yield param
 
 
-def save_model(model: GDinoCoop, save_path: Path) -> None:
-    """Persist prompt-related parameters to disk."""
+def save_prompt_weights(model: GDinoCoop, save_path: Path) -> None:
     save_path = Path(save_path)
     save_path.parent.mkdir(parents=True, exist_ok=True)
     prompt_state = {k: v.detach().cpu() for k, v in model.state_dict().items() if "prompt" in k}
@@ -518,74 +518,28 @@ def save_model(model: GDinoCoop, save_path: Path) -> None:
 
 
 def load_prompt_weights(model: GDinoCoop, load_path: Optional[str], device: torch.device) -> None:
-    """Warm start prompts/meta-network weights if available."""
     if not load_path:
         return
-
     candidate = Path(load_path)
     if not candidate.exists():
         print(f"Load path {candidate} does not exist; skipping warm start.")
         return
-
     state = torch.load(candidate, map_location=device)
-    filtered_state = {k: v for k, v in state.items() if "prompt" in k}
-    if not filtered_state:
+    filtered = {k: v for k, v in state.items() if "prompt" in k}
+    if not filtered:
         print(f"No prompt weights found in {candidate}; skipping warm start.")
         return
-
-    load_result = model.load_state_dict(filtered_state, strict=False)
-    print(f"Loaded prompt weights from {candidate} ({len(filtered_state)} tensors).")
+    load_result = model.load_state_dict(filtered, strict=False)
     if load_result.unexpected_keys:
         print(f"Warning: unexpected keys when loading prompts: {load_result.unexpected_keys}")
-
-
-def save_training_summary(
-    dataset_pair: str,
-    checkpoint_path: Path,
-    history,
-    args: argparse.Namespace,
-    device: torch.device,
-    best_map: float,
-) -> None:
-    results_dir = DEFAULT_RESULTS_DIR
-    results_dir.mkdir(parents=True, exist_ok=True)
-
-    dataset_primary, dataset_secondary = dataset_pair.split("-")
-    summary = {
-        "dataset_pair": dataset_pair,
-        "checkpoint_path": str(checkpoint_path),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "best_map": best_map,
-        "hyperparameters": {
-            "epochs": args.epochs,
-            "learning_rate": args.lr,
-            "batch_size": args.batch_size,
-            "unlabeled_batch_size": args.unlabeled_batch_size,
-            "context_length": args.context_length,
-            "device": str(device),
-            "seed": args.seed,
-            "lambda_u": args.lambda_u,
-            "threshold": args.threshold,
-            "eval_threshold": args.eval_threshold,
-            "ema_decay": args.ema_decay,
-            "b_labeled_fraction": args.b_labeled_fraction,
-            "dataset_primary": dataset_primary,
-            "dataset_secondary": dataset_secondary,
-        },
-        "history": history or [],
-    }
-
-    summary_path = results_dir / f"dataset_{dataset_pair}.json"
-    with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2)
-    print(f"Saved training summary to: {summary_path}")
+    print(f"Loaded prompt weights from {candidate} ({len(filtered)} tensors).")
 
 
 def load_frozen_grounding_dino(weight_path: Path, device: torch.device, prompt_length: int) -> GDinoCoop:
     cfg = GroundingDinoConfig()
     base_model = GroundingDinoForObjectDetection(cfg)
-    text_backbone = BertModel(cfg.text_config)
-    base_model.model.text_backbone = text_backbone
+    bert_model = BertModel(cfg.text_config)
+    base_model.model.text_backbone = bert_model
 
     state = torch.load(weight_path, map_location=device)
     missing, unexpected = base_model.load_state_dict(state, strict=False)
@@ -604,17 +558,38 @@ def prepare_inputs(
     device: torch.device,
     text_prompts: Optional[Sequence[str]] = None,
 ) -> Dict[str, torch.Tensor]:
+    batch_size = len(images)
+
     if text_prompts is None:
-        text_prompts = [PROMPT_TEXT] * len(images)
-    inputs = processor(images=list(images), text=list(text_prompts), return_tensors="pt", padding=True)
+        normalized_text: List[List[str]] = [[PROMPT_TEXT] for _ in range(batch_size)]
+    else:
+        provided = list(text_prompts)
+        if len(provided) == 1 and batch_size > 1:
+            provided = provided * batch_size
+        if len(provided) != batch_size:
+            raise ValueError(
+                f"Expected {batch_size} text prompts (one list per image) but received {len(provided)} entries."
+            )
+
+        normalized_text = []
+        for entry in provided:
+            if isinstance(entry, str):
+                normalized_text.append([entry])
+            else:
+                normalized_text.append([str(prompt) for prompt in entry])
+
+    inputs = processor(images=list(images), text=normalized_text, return_tensors="pt", padding=True)
     return {key: value.to(device) for key, value in inputs.items()}
 
 
-def build_pseudo_labels(
-    outputs,
-    threshold: float,
-    device: torch.device,
-) -> List[Dict[str, torch.Tensor]]:
+def move_targets_to_device(targets: List[Dict[str, torch.Tensor]], device: torch.device) -> List[Dict[str, torch.Tensor]]:
+    moved = []
+    for target in targets:
+        moved.append({key: value.to(device) for key, value in target.items()})
+    return moved
+
+
+def build_pseudo_labels(outputs, threshold: float, device: torch.device) -> List[Dict[str, torch.Tensor]]:
     logits = outputs.logits.sigmoid().detach()
     pred_boxes = outputs.pred_boxes.detach()
 
@@ -639,7 +614,7 @@ def build_pseudo_labels(
             pseudo_labels.append(
                 {
                     "class_labels": torch.full(
-                        (selected_boxes.size(0),), PROMPT_TOKEN_CLASS, dtype=torch.long, device=device
+                        (selected_boxes.size(0),), PROMPT_CLASS_ID, dtype=torch.long, device=device
                     ),
                     "boxes": selected_boxes.to(device),
                 }
@@ -656,13 +631,6 @@ def update_ema(student: GDinoCoop, teacher: GDinoCoop, decay: float) -> None:
         param.data.mul_(decay).add_(student_state[name].data, alpha=1.0 - decay)
 
 
-def move_targets_to_device(targets: List[Dict[str, torch.Tensor]], device: torch.device) -> List[Dict[str, torch.Tensor]]:
-    moved = []
-    for target in targets:
-        moved.append({key: value.to(device) for key, value in target.items()})
-    return moved
-
-
 def evaluate_map(
     model: GDinoCoop,
     dataloader: DataLoader,
@@ -674,7 +642,7 @@ def evaluate_map(
     metric = MeanAveragePrecision(iou_type="bbox")
 
     with torch.no_grad():
-        for images, _, gt_info, sizes in dataloader:
+        for images, _, gt_boxes, sizes in dataloader:
             inputs = prepare_inputs(processor, images, device)
             outputs = model(**inputs)
             logits = outputs.logits.sigmoid()
@@ -685,7 +653,7 @@ def evaluate_map(
                     scores = logits[idx].max(dim=-1).values
                 else:
                     scores = logits[idx].squeeze(-1)
-                labels = torch.full(scores.shape, PROMPT_TOKEN_CLASS, dtype=torch.long, device=scores.device)
+                labels = torch.full(scores.shape, PROMPT_CLASS_ID, dtype=torch.long, device=scores.device)
 
                 mask = scores >= conf_threshold
                 scores = scores[mask]
@@ -693,7 +661,11 @@ def evaluate_map(
                 boxes = pred_boxes[idx][mask]
 
                 if boxes.numel() == 0:
-                    pred = {"boxes": torch.zeros((0, 4)), "scores": torch.zeros((0,)), "labels": torch.zeros((0,), dtype=torch.long)}
+                    pred = {
+                        "boxes": torch.zeros((0, 4)),
+                        "scores": torch.zeros((0,)),
+                        "labels": torch.zeros((0,), dtype=torch.long),
+                    }
                 else:
                     boxes_xyxy = cxcywh_to_xyxy(boxes)
                     height, width = sizes[idx]
@@ -701,8 +673,8 @@ def evaluate_map(
                     boxes_xyxy[:, [1, 3]] *= height
                     pred = {"boxes": boxes_xyxy.cpu(), "scores": scores.cpu(), "labels": labels.cpu()}
 
-                target_boxes = gt_info[idx]["boxes"]
-                target_labels = gt_info[idx]["labels"]
+                target_boxes = gt_boxes[idx]
+                target_labels = torch.full((target_boxes.size(0),), PROMPT_CLASS_ID, dtype=torch.long)
                 target = {"boxes": target_boxes.cpu(), "labels": target_labels.cpu()}
                 metric.update([pred], [target])
 
@@ -710,12 +682,48 @@ def evaluate_map(
     return float(result.get("map", torch.tensor(0.0)))
 
 
+def save_training_summary(
+    dataset_pair: str,
+    checkpoint_path: Path,
+    history,
+    args: argparse.Namespace,
+    device: torch.device,
+    best_map: float,
+) -> None:
+    results_dir = DEFAULT_RESULTS_DIR
+    results_dir.mkdir(parents=True, exist_ok=True)
+    summary = {
+        "dataset_pair": dataset_pair,
+        "checkpoint_path": str(checkpoint_path),
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "best_map": best_map,
+        "hyperparameters": {
+            "epochs": args.epochs,
+            "learning_rate": args.lr,
+            "batch_size": args.batch_size,
+            "unlabeled_batch_size": args.unlabeled_batch_size,
+            "context_length": args.context_length,
+            "lambda_u": args.lambda_u,
+            "threshold": args.threshold,
+            "eval_threshold": args.eval_threshold,
+            "ema_decay": args.ema_decay,
+            "b_labeled_fraction": args.b_labeled_fraction,
+            "device": str(device),
+            "seed": args.seed,
+        },
+        "history": history,
+    }
+
+    summary_path = results_dir / f"dataset_{dataset_pair}.json"
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print(f"Saved training summary to: {summary_path}")
+
+
 def resolve_checkpoint_path(save_path_arg: Optional[str], dataset_pair: str) -> Path:
     if save_path_arg:
         return Path(save_path_arg)
-    if dataset_pair in PAIR_DEFAULT_MODEL_PATHS:
-        return PAIR_DEFAULT_MODEL_PATHS[dataset_pair]
-    base = DEFAULT_SAVE_PATH
+    base = Path(DEFAULT_SAVE_PATH)
     return base.with_name(f"{base.stem}_{dataset_pair}{base.suffix}")
 
 
@@ -723,16 +731,12 @@ def train(args: argparse.Namespace, device: torch.device):
     set_seed(args.seed)
 
     data_root = Path(args.data_root)
-    weight_path = Path(args.model_path)
     dataset_primary, dataset_secondary = args.dataset_pair.split("-")
     dataset_pair_label = f"{dataset_primary}-{dataset_secondary}"
-    checkpoint_path = resolve_checkpoint_path(args.save_path, dataset_pair_label)
 
-    print(f"Loading processor {args.processor_name}...")
     processor = AutoProcessor.from_pretrained(args.processor_name)
-
     print("Loading Grounding DINO weights (frozen except prompts)...")
-    student = load_frozen_grounding_dino(weight_path, device, args.context_length)
+    student = load_frozen_grounding_dino(Path(args.model_path), device, args.context_length)
     load_prompt_weights(student, args.load_path, device)
     teacher = deepcopy(student)
     teacher.eval()
@@ -768,7 +772,7 @@ def train(args: argparse.Namespace, device: torch.device):
     )
     if len(unlabeled_dataset) == 0:
         unlabeled_loader = None
-        print("[Info] No unlabeled samples available; proceeding with supervised training only.")
+        print("[Info] No unlabeled samples detected; training will be supervised only.")
     else:
         drop_last = len(unlabeled_dataset) >= args.unlabeled_batch_size
         unlabeled_loader = DataLoader(
@@ -793,8 +797,9 @@ def train(args: argparse.Namespace, device: torch.device):
     optimizer = optim.AdamW(prompt_parameters(student), lr=args.lr, weight_decay=args.weight_decay)
 
     best_map = -1.0
-    best_checkpoint_path = checkpoint_path
+    best_checkpoint_path = resolve_checkpoint_path(args.save_path, dataset_pair_label)
     history = []
+
     val_split_target = 0
     if args.batch_size > 10:
         val_split_target = max(1, int(args.batch_size * 0.1))
@@ -905,8 +910,8 @@ def train(args: argparse.Namespace, device: torch.device):
         eval_map = evaluate_map(student, eval_loader, processor, device, args.eval_threshold)
         if avg_val_loss is not None:
             print(
-                f"Epoch {epoch:02d} | loss={avg_total:.4f} (sup={avg_sup:.4f}, unsup={avg_unsup:.4f}) | "
-                f"val={avg_val_loss:.4f} | {dataset_secondary}-test mAP={eval_map:.4f}"
+                f"Epoch {epoch:02d} | loss={avg_total:.4f} (sup={avg_sup:.4f}, unsup={avg_unsup:.4f}) | val={avg_val_loss:.4f} | "
+                f"{dataset_secondary}-test mAP={eval_map:.4f}"
             )
         else:
             print(
@@ -929,13 +934,11 @@ def train(args: argparse.Namespace, device: torch.device):
 
         if eval_map > best_map:
             best_map = eval_map
-            save_model(student, checkpoint_path)
-            best_checkpoint_path = checkpoint_path
-            print(f"  Saved improved prompts to {checkpoint_path}")
+            save_prompt_weights(student, best_checkpoint_path)
+            print(f"  Saved improved prompts to {best_checkpoint_path}")
 
     if best_map < 0:
-        save_model(student, checkpoint_path)
-        best_checkpoint_path = checkpoint_path
+        save_prompt_weights(student, best_checkpoint_path)
 
     print(f"Best validation mAP: {best_map:.4f}")
     return history, best_checkpoint_path, best_map
@@ -948,63 +951,56 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         choices=SUPPORTED_DATASET_PAIRS,
         default="A-B",
-        help="Dataset pair to train on in <PRIMARY>-<SECONDARY> format",
+        help="Dataset pairing in PRIMARY-SECONDARY format (PRIMARY fully labeled, SECONDARY semi-labeled)",
     )
-    parser.add_argument(
-        "--data_root",
-        type=str,
-        default=str(DEFAULT_DATA_ROOT),
-        help="Root directory containing dataset folders",
-    )
+    parser.add_argument("--data_root", type=str, default=str(DEFAULT_DATA_ROOT), help="Root directory for data")
     parser.add_argument(
         "--model_path",
         type=str,
-        default="models/grounding_dino_tiny.pth",
+        default=str(DEFAULT_MODEL_PATH),
         help="Path to the frozen Grounding DINO checkpoint",
     )
     parser.add_argument(
         "--processor_name",
         type=str,
         default="IDEA-Research/grounding-dino-tiny",
-        help="Identifier of the Hugging Face processor",
+        help="Hugging Face processor identifier",
     )
     parser.add_argument(
         "--save_path",
         type=str,
         default=None,
-        help="Path for saving prompt weights. Defaults to models/fm_coop_model_<dataset_pair>.pth",
+        help="Path for saving prompt weights (defaults to models/fm_coop_model_<pair>.pth)",
     )
+    parser.add_argument("--load_path", type=str, default=None, help="Optional prompt checkpoint to warm-start")
+    parser.add_argument("--epochs", type=int, default=1, help="Number of training epochs")
+    parser.add_argument("--batch_size", type=int, default=2, help="Batch size for labeled data")
+    parser.add_argument("--unlabeled_batch_size", type=int, default=4, help="Batch size for unlabeled data")
+    parser.add_argument("--lr", type=float, default=1e-3, help="AdamW learning rate")
+    parser.add_argument("--weight_decay", type=float, default=0.0, help="Weight decay for AdamW")
+    parser.add_argument("--context_length", type=int, default=16, help="Number of learnable prompt tokens")
+    parser.add_argument("--lambda_u", type=float, default=1.0, help="Weight for unsupervised FixMatch loss")
+    parser.add_argument("--threshold", type=float, default=0.7, help="Confidence threshold for pseudo-labeling")
+    parser.add_argument("--eval_threshold", type=float, default=0.3, help="Confidence threshold for evaluation")
+    parser.add_argument("--ema_decay", type=float, default=0.999, help="EMA decay for teacher model")
     parser.add_argument(
-        "--load_path",
-        type=str,
-        default=None,
-        help="Optional checkpoint to warm-start prompt weights",
+        "--b_labeled_fraction",
+        type=float,
+        default=0.1,
+        help="Fraction of dataset_B training samples treated as labeled",
     )
-    parser.add_argument("--epochs", type=int, default=1,
-                        help="Number of training epochs (default: 1)")
-    parser.add_argument("--batch_size", type=int, default=2)
-    parser.add_argument("--unlabeled_batch_size", type=int, default=4)
-    parser.add_argument("--lr", type=float, default=1e-3,
-                        help="Learning rate for AdamW optimizer (default: 1e-3)")
-    parser.add_argument("--weight_decay", type=float, default=0.0)
-    parser.add_argument("--context_length", type=int, default=16)
-    parser.add_argument("--lambda_u", type=float, default=1.0)
-    parser.add_argument("--threshold", type=float, default=0.7)
-    parser.add_argument("--eval_threshold", type=float, default=0.3)
-    parser.add_argument("--ema_decay", type=float, default=0.999)
-    parser.add_argument("--b_labeled_fraction", type=float, default=0.1)
-    parser.add_argument("--num_workers", type=int, default=0)
-    parser.add_argument("--device", type=str, default="cuda", help="Device to use (defaults to CUDA if available)")
-    parser.add_argument("--seed", type=int, default=10,
-                        help="Random seed for reproducibility (default: 10)")
+    parser.add_argument("--num_workers", type=int, default=0, help="DataLoader worker count")
+    parser.add_argument("--device", type=str, default="cuda", help="Preferred device (cuda or cpu)")
+    parser.add_argument("--seed", type=int, default=10, help="Random seed")
     return parser
 
 
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
     print("=" * 50)
-    print("Task 3: Semi-Supervised CoOp Training")
+    print("Task 3: Semi-Supervised CoOp Training (FixMatch)")
     print("=" * 50)
 
     device = resolve_device(args.device)

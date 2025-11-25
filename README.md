@@ -18,7 +18,7 @@ COL-8628/
 │       ├── train_task3.py           # Semi-supervised CoOp training
 │       └── test_task3.py            # Semi-supervised CoOp testing
 │   └── report.ipynb                 # Notebook that assembles the final report figures/tables
-├── models/                          # Saved model weights
+├── models/                          # Saved model weights URL [https://drive.google.com/drive/folders/1bYvzqSwwoWvicSZwPNZZ8JFtA9w9v3ml?usp=sharing]
 ├── data/                           # Dataset storage
 ├── utils/                          # Utility functions
 ├── requirements.txt                # Python dependencies
