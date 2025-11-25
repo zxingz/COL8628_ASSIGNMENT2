@@ -18,12 +18,15 @@ def load_rgb_image(path: Path) -> Image.Image:
 
 class DataSet:
     """Dataset class to handle data loading and preprocessing."""
-    
+
     def __init__(self, data_path: str = 'data', name: str = 'A', label: str = 'train'):
-        self.data_path = Path(data_path) 
-        self.name = 'A'
+        self.data_path = Path(data_path)
+        self.name = str(name).upper()
         self.label = label
-        self.df = pd.read_csv(os.path.join(self.data_path, f'dataset_{self.name}', f'{self.label}', f'{self.label}.csv'))
+        csv_path = self.data_path / f'dataset_{self.name}' / self.label / f'{self.label}.csv'
+        if not csv_path.exists():
+            raise FileNotFoundError(f"Dataset CSV not found at {csv_path}")
+        self.df = pd.read_csv(csv_path)
         
     def load_image(self, image_name: str) -> Image.Image:
         """Load an image given its name."""

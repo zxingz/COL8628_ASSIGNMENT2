@@ -17,12 +17,29 @@ COL-8628/
 │   └── task3/
 │       ├── train_task3.py           # Semi-supervised CoOp training
 │       └── test_task3.py            # Semi-supervised CoOp testing
+│   └── report.ipynb                 # Notebook that assembles the final report figures/tables
 ├── models/                          # Saved model weights
 ├── data/                           # Dataset storage
 ├── utils/                          # Utility functions
 ├── requirements.txt                # Python dependencies
+├── report.pdf                      # Final compiled report submitted for the assignment
 └── README.md                       # This file
 ```
+
+### Scripts Overview
+
+| Path | Purpose |
+|------|---------|
+| `scripts/task1/task1.py` | Zero-shot evaluation driver. Loads Grounding DINO, sweeps prompts/thresholds over selected datasets, stores per-image predictions, and computes summarized mAP (currently @0.1 IoU). |
+| `scripts/task2/train_task2_1.py` | CoOp training pipeline. Adds CLI controls for dataset/device/checkpoints, trains prompt tokens with optional validation split, and saves history plus dataset-tagged checkpoints and JSON summaries. |
+| `scripts/task2/test_task2_1.py` | Evaluation script for trained CoOp prompts. Loads checkpoints, runs inference on the requested dataset split, and exports metrics/predictions to `results/task2-1`. |
+| `scripts/task2/train_task2_2.py` | CoCoOp training script. Mirrors Task2.1 CLI but adds conditional prompt learner parameters, validation logging, prompt weight save/load, and dataset-specific summary writes under `results/task2-2`. |
+| `scripts/task2/test_task2_2.py` | Inference companion for the CoCoOp model. Restores saved prompt weights, evaluates on chosen splits, and logs detection metrics for comparison with Task2.1. |
+| `scripts/task3/train_task3.py` | FixMatch-style semi-supervised trainer. Supports dataset-pair selection (A-B/B-C/A-C), EMA teacher updates, pseudo-labeling thresholds, validation slices, checkpointing, and history summaries for Task3 experiments. |
+| `scripts/task3/test_task3.py` | Downstream evaluation for semi-supervised prompts. Applies the trained student model on held-out data to report detection scores consistent with Task3 objectives. |
+| `scripts/report.ipynb` | Report generation notebook. Pulls metrics/artifacts from the `results/` folders to create the plots, tables, and narratives exported into the final PDF. |
+
+The rendered `report.pdf` in the repository root is produced from `scripts/report.ipynb` and represents the final deliverable turned in for the course.
 
 ## Setup Instructions
 

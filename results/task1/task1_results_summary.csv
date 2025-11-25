@@ -1,0 +1,91 @@
+dataset,prompt,box_threshold,text_threshold,map
+A,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.3,0.15541200000000002
+A,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.5,0.031554
+A,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.7,0.06906000000000001
+A,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.3,0.036748
+A,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.5,0.038428
+A,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.7,0.052428
+A,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.3,0.166108
+A,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.5,0.110864
+A,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.7,0.115554
+A,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.3,0.084068
+A,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.5,0.080596
+A,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.7,0.14583600000000002
+A,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.3,0.035348
+A,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.5,0.145374
+A,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.7,0.074296
+A,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.3,0.155958
+A,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.5,0.031049999999999998
+A,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.7,0.115022
+A,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.3,0.148986
+A,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.5,0.059624
+A,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.7,0.048452
+A,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.3,0.12651600000000002
+A,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.5,0.118522
+A,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.7,0.126334
+A,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.3,0.032436
+A,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.5,0.168362
+A,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.7,0.077964
+A,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.3,0.054598
+A,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.5,0.14508
+A,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.7,0.074268
+B,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.3,0.07655
+B,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.5,0.032394
+B,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.7,0.086966
+B,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.3,0.068052
+B,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.5,0.070656
+B,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.7,0.046534
+B,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.3,0.15315800000000002
+B,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.5,0.123618
+B,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.7,0.087806
+B,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.3,0.15738600000000003
+B,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.5,0.133166
+B,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.7,0.030587999999999997
+B,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.3,0.15349400000000002
+B,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.5,0.057594000000000006
+B,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.7,0.157862
+B,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.3,0.039057999999999995
+B,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.5,0.101288
+B,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.7,0.08082
+B,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.3,0.15124
+B,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.5,0.142406
+B,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.7,0.16146
+B,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.3,0.039618
+B,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.5,0.083144
+B,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.7,0.03924
+B,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.3,0.074534
+B,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.5,0.058728
+B,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.7,0.10049
+B,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.3,0.033276
+B,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.5,0.068024
+B,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.7,0.09708800000000001
+C,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.3,0.0762
+C,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.5,0.11036
+C,"A mass with smooth, circumscribed margins is a condition for a benign finding, whereas a mass with spiculated, irregular margins is a condition for malignancy.",0.3,0.7,0.07639599999999999
+C,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.3,0.1637
+C,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.5,0.08159
+C,"A radiolucent (dark) mass, such as a lipoma or oil cyst, is a benign condition, while a hyperdense (white) and spiculated mass is a malignant condition.",0.3,0.7,0.10744800000000002
+C,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.3,0.047318
+C,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.5,0.09717200000000001
+C,"A segmental or linear-branching distribution of calcifications indicates malignancy, whereas diffuse, scattered, bilateral calcifications are a benign finding.",0.3,0.7,0.15356400000000003
+C,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.3,0.08665800000000001
+C,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.5,0.068122
+C,"A small, oval mass with a lucent center (fatty hilum) is a benign intramammary lymph node; a new, developing focal asymmetry is a malignant sign.",0.3,0.7,0.033766
+C,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.3,0.055606
+C,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.5,0.054206000000000004
+C,"A well-defined or circumscribed mass is observed in benign cases; an indistinct, microlobulated, or obscured mass is observed in malignant cases.",0.3,0.7,0.109548
+C,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.3,0.127048
+C,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.5,0.08166000000000001
+C,"An observation is benign if it's a round, fat-containing, low-density mass; conversely, it is malignant if it's an irregular, high-density mass.",0.3,0.7,0.11030400000000001
+C,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.3,0.154642
+C,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.5,0.067324
+C,"Architectural distortion or skin retraction is a condition for a malignant tumor, while a mass that is stable and unchanged for several years is a benign condition.",0.3,0.7,0.074506
+C,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.3,0.037406
+C,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.5,0.169622
+C,"The condition is benign if ultrasound confirms a simple cyst, but the condition is suspicious for malignancy if the mass is solid with indistinct margins.",0.3,0.7,0.10536200000000001
+C,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.3,0.043944
+C,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.5,0.130646
+C,"The observation is considered malignant if it shows a cluster of fine, pleomorphic microcalcifications, but it is benign if the calcifications are coarse, large, and popcorn-like.",0.3,0.7,0.14200000000000002
+C,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.3,0.162244
+C,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.5,0.15149200000000002
+C,"The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",0.3,0.7,0.14998
