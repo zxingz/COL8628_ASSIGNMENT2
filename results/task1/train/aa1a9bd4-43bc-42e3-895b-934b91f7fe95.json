@@ -1,0 +1,414 @@
+{
+  "dataset": "C",
+  "ground_truth": {
+    "20587054_b6a4f750c6df4f90_MG_R_CC_ANON.dcm.png": [
+      [
+        1949.0,
+        1168.0,
+        2171.0,
+        1312.0
+      ]
+    ],
+    "20587200_fd746d25eb40b3dc_MG_R_ML_ANON.dcm.png": [],
+    "20587372_e634830794f5c1bd_MG_L_ML_ANON.dcm.png": [],
+    "20587466_d571b5880ad2a016_MG_L_CC_ANON.dcm.png": [],
+    "20587492_d571b5880ad2a016_MG_R_ML_ANON.dcm.png": [],
+    "20587612_f4b2d377f43ba0bd_MG_R_CC_ANON.dcm.png": [
+      [
+        2738.0,
+        522.0,
+        3059.0,
+        785.0
+      ]
+    ],
+    "20587758_81cd83d2f4d78528_MG_L_CC_ANON.dcm.png": [],
+    "20588164_8d0b9620c53c0268_MG_R_CC_ANON.dcm.png": [],
+    "22427728_d713ef5849f98b6c_MG_R_ML_ANON.dcm.png": [],
+    "22427864_bbd6a3a35438c11b_MG_L_CC_ANON.dcm.png": [],
+    "22580706_fe7d005dcbbfb46d_MG_R_ML_ANON.dcm.png": [
+      [
+        2212.0,
+        2936.0,
+        3120.0,
+        3570.0
+      ]
+    ],
+    "22613702_dcafa6ba6374ec07_MG_L_ML_ANON.dcm.png": [
+      [
+        374.0,
+        1303.0,
+        995.0,
+        1842.0
+      ]
+    ],
+    "22613796_45c7f44839fd9e68_MG_L_CC_ANON.dcm.png": [],
+    "22670094_e1f51192f7bf3f5f_MG_R_CC_ANON.dcm.png": [
+      [
+        2770.0,
+        1080.0,
+        3246.0,
+        1476.0
+      ]
+    ],
+    "22670301_98429c0bdf78c0c7_MG_L_CC_ANON.dcm.png": [],
+    "22670465_7e677f3d530e41ed_MG_L_CC_ANON.dcm.png": [
+      [
+        196.0,
+        673.0,
+        654.0,
+        1262.0
+      ]
+    ],
+    "22679008_b9a4da5f2dae63a9_MG_R_ML_ANON.dcm.png": [
+      [
+        2399.0,
+        2010.0,
+        2526.0,
+        2244.0
+      ]
+    ],
+    "22679036_b9a4da5f2dae63a9_MG_L_ML_ANON.dcm.png": [],
+    "24055483_ac3185e18ffdc7b6_MG_L_CC_ANON.dcm.png": [
+      [
+        407.0,
+        1861.0,
+        595.0,
+        2045.0
+      ]
+    ],
+    "24055627_6f1aef40b3775182_MG_L_CC_ANON.dcm.png": [],
+    "24055654_6f1aef40b3775182_MG_R_CC_ANON.dcm.png": [
+      [
+        2286.0,
+        2032.0,
+        2857.0,
+        2464.0
+      ]
+    ],
+    "24055806_f0f1a133837b5137_MG_R_CC_ANON.dcm.png": [],
+    "24055877_839819f2eadaf325_MG_L_ML_ANON.dcm.png": [],
+    "24058660_9e8db9e34d5275ef_MG_R_CC_ANON.dcm.png": [],
+    "24058686_9e8db9e34d5275ef_MG_L_CC_ANON.dcm.png": [
+      [
+        635.0,
+        2592.0,
+        959.0,
+        3004.0
+      ]
+    ],
+    "24058738_9e8db9e34d5275ef_MG_L_ML_ANON.dcm.png": [
+      [
+        611.0,
+        2296.0,
+        860.0,
+        2511.0
+      ]
+    ],
+    "24065270_c4b995eddb3c510c_MG_R_ML_ANON.dcm.png": [],
+    "24065289_c4b995eddb3c510c_MG_L_CC_ANON.dcm.png": [
+      [
+        310.0,
+        1738.0,
+        802.0,
+        2368.0
+      ]
+    ],
+    "24065407_83db89f57aea498a_MG_R_ML_ANON.dcm.png": [
+      [
+        2073.0,
+        1869.0,
+        2764.0,
+        2431.0
+      ]
+    ],
+    "24065434_83db89f57aea498a_MG_L_CC_ANON.dcm.png": [],
+    "24065860_c01f83a1eb283270_MG_R_ML_ANON.dcm.png": [],
+    "24065887_c01f83a1eb283270_MG_L_CC_ANON.dcm.png": [],
+    "30011798_4f20c1285d8f0b1f_MG_R_CC_ANON.dcm.png": [],
+    "30318067_4f20c1285d8f0b1f_MG_L_ML_ANON.dcm.png": [
+      [
+        623.0,
+        1378.0,
+        914.0,
+        1678.0
+      ]
+    ],
+    "50993922_de5e8d61e501a71b_MG_R_ML_ANON.dcm.png": [],
+    "50994110_cc9e66c5b31baab8_MG_L_ML_ANON.dcm.png": [],
+    "50994535_de4c34099d6ef8de_MG_R_ML_ANON.dcm.png": [],
+    "50994841_069212ec65a94339_MG_R_ML_ANON.dcm.png": [
+      [
+        1741.0,
+        1414.0,
+        1949.0,
+        1621.0
+      ]
+    ],
+    "50994895_069212ec65a94339_MG_R_CC_ANON.dcm.png": [
+      [
+        2007.0,
+        1307.0,
+        2229.0,
+        1542.0
+      ]
+    ],
+    "50995963_d742ec2f9b90aa62_MG_L_ML_ANON.dcm.png": [],
+    "50996999_ce5e5e18a261cd29_MG_L_CC_ANON.dcm.png": [],
+    "50997223_9054942f7be52dd9_MG_L_ML_ANON.dcm.png": [],
+    "50997461_97ec8cadfca70d32_MG_R_ML_ANON.dcm.png": [],
+    "50997624_67cc8c9939d74a9a_MG_R_ML_ANON.dcm.png": [],
+    "50997796_cbb6c98a81e69eeb_MG_L_CC_ANON.dcm.png": [],
+    "50998322_1e4b534393d18753_MG_R_ML_ANON.dcm.png": [],
+    "50999121_cb65e8dac169f596_MG_R_ML_ANON.dcm.png": [],
+    "51048738_3f22cdda8da215e3_MG_R_ML_ANON.dcm.png": [],
+    "51049080_8c105bb715bf1c3c_MG_R_ML_ANON.dcm.png": [],
+    "51049134_8c105bb715bf1c3c_MG_R_CC_ANON.dcm.png": [],
+    "53580804_51bec6477a7898b9_MG_L_ML_ANON.dcm.png": [
+      [
+        150.0,
+        2370.0,
+        540.0,
+        2714.0
+      ]
+    ],
+    "53581860_21e6cc12630e5e9f_MG_L_ML_ANON.dcm.png": [],
+    "53582476_3f0db31711fc9795_MG_R_CC_ANON.dcm.png": [],
+    "53586442_dda3c6969a34ff8e_MG_R_CC_ANON.dcm.png": [],
+    "53586724_e5f3f68b9ce31228_MG_L_ML_ANON.dcm.png": [],
+    "53587663_5fb370d4c1c71974_MG_R_CC_ANON.dcm.png": [],
+    "53587690_5fb370d4c1c71974_MG_L_ML_ANON.dcm.png": []
+  },
+  "prediction_C": {
+    "20587054_b6a4f750c6df4f90_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587758_81cd83d2f4d78528_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22427864_bbd6a3a35438c11b_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065434_83db89f57aea498a_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53582476_3f0db31711fc9795_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50997796_cbb6c98a81e69eeb_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065289_c4b995eddb3c510c_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50997624_67cc8c9939d74a9a_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53586442_dda3c6969a34ff8e_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50994110_cc9e66c5b31baab8_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22670094_e1f51192f7bf3f5f_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065860_c01f83a1eb283270_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50994841_069212ec65a94339_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50996999_ce5e5e18a261cd29_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "30011798_4f20c1285d8f0b1f_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587612_f4b2d377f43ba0bd_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50997461_97ec8cadfca70d32_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24055483_ac3185e18ffdc7b6_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24058660_9e8db9e34d5275ef_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50994535_de4c34099d6ef8de_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587200_fd746d25eb40b3dc_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24055627_6f1aef40b3775182_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065270_c4b995eddb3c510c_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53587663_5fb370d4c1c71974_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24055877_839819f2eadaf325_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50994895_069212ec65a94339_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20588164_8d0b9620c53c0268_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22580706_fe7d005dcbbfb46d_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "51049134_8c105bb715bf1c3c_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50995963_d742ec2f9b90aa62_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50993922_de5e8d61e501a71b_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53587690_5fb370d4c1c71974_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50998322_1e4b534393d18753_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24055654_6f1aef40b3775182_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22427728_d713ef5849f98b6c_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "30318067_4f20c1285d8f0b1f_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50997223_9054942f7be52dd9_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587372_e634830794f5c1bd_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24058686_9e8db9e34d5275ef_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24058738_9e8db9e34d5275ef_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53581860_21e6cc12630e5e9f_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "50999121_cb65e8dac169f596_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24055806_f0f1a133837b5137_MG_R_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587492_d571b5880ad2a016_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53586724_e5f3f68b9ce31228_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065407_83db89f57aea498a_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22613796_45c7f44839fd9e68_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "51048738_3f22cdda8da215e3_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "20587466_d571b5880ad2a016_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22679036_b9a4da5f2dae63a9_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22670301_98429c0bdf78c0c7_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22670465_7e677f3d530e41ed_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "53580804_51bec6477a7898b9_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22613702_dcafa6ba6374ec07_MG_L_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "24065887_c01f83a1eb283270_MG_L_CC_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "51049080_8c105bb715bf1c3c_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    },
+    "22679008_b9a4da5f2dae63a9_MG_R_ML_ANON.dcm.png": {
+      "boxes": [],
+      "scores": []
+    }
+  },
+  "prompt": "The presence of benign vascular calcifications (parallel 'tram-tracks') is not suspicious; the presence of clustered, amorphous calcifications is suspicious for malignancy.",
+  "box_threshold": 0.7,
+  "text_threshold": 0.3
+}

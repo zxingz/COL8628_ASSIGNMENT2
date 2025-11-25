@@ -65,6 +65,11 @@ DEFAULT_RESULTS_DIR = PROJECT_ROOT / "results" / "task3" / "train"
 DEFAULT_DATA_ROOT = PROJECT_ROOT / "data"
 SUPPORTED_DATASET_PAIRS = ("A-B", "B-C", "A-C")
 
+PAIR_DEFAULT_MODEL_PATHS = {
+    pair: DEFAULT_MODELS_DIR / f"fm_coop_model_{pair}.pth"
+    for pair in SUPPORTED_DATASET_PAIRS
+}
+
 # Single-class detection prompt; benign cases simply contribute no boxes.
 PROMPT_TEXT = "a mammogram containing a malignant mass"
 PROMPT_TOKEN_CLASS = 0
@@ -705,15 +710,23 @@ def evaluate_map(
     return float(result.get("map", torch.tensor(0.0)))
 
 
+def resolve_checkpoint_path(save_path_arg: Optional[str], dataset_pair: str) -> Path:
+    if save_path_arg:
+        return Path(save_path_arg)
+    if dataset_pair in PAIR_DEFAULT_MODEL_PATHS:
+        return PAIR_DEFAULT_MODEL_PATHS[dataset_pair]
+    base = DEFAULT_SAVE_PATH
+    return base.with_name(f"{base.stem}_{dataset_pair}{base.suffix}")
+
+
 def train(args: argparse.Namespace, device: torch.device):
     set_seed(args.seed)
 
     data_root = Path(args.data_root)
     weight_path = Path(args.model_path)
-    base_save_path = Path(args.save_path)
     dataset_primary, dataset_secondary = args.dataset_pair.split("-")
     dataset_pair_label = f"{dataset_primary}-{dataset_secondary}"
-    checkpoint_path = base_save_path.with_name(f"{base_save_path.stem}_{dataset_pair_label}{base_save_path.suffix}")
+    checkpoint_path = resolve_checkpoint_path(args.save_path, dataset_pair_label)
 
     print(f"Loading processor {args.processor_name}...")
     processor = AutoProcessor.from_pretrained(args.processor_name)
@@ -958,8 +971,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--save_path",
         type=str,
-        default=str(DEFAULT_SAVE_PATH),
-        help="Base path for saving prompt weights (dataset suffix will be added)",
+        default=None,
+        help="Path for saving prompt weights. Defaults to models/fm_coop_model_<dataset_pair>.pth",
     )
     parser.add_argument(
         "--load_path",
@@ -967,10 +980,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional checkpoint to warm-start prompt weights",
     )
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=1,
+                        help="Number of training epochs (default: 1)")
     parser.add_argument("--batch_size", type=int, default=2)
     parser.add_argument("--unlabeled_batch_size", type=int, default=4)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-3,
+                        help="Learning rate for AdamW optimizer (default: 1e-3)")
     parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--context_length", type=int, default=16)
     parser.add_argument("--lambda_u", type=float, default=1.0)
@@ -980,7 +995,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--b_labeled_fraction", type=float, default=0.1)
     parser.add_argument("--num_workers", type=int, default=0)
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (defaults to CUDA if available)")
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--seed", type=int, default=10,
+                        help="Random seed for reproducibility (default: 10)")
     return parser
 
 
